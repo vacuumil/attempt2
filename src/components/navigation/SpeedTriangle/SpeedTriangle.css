@@ -1,0 +1,701 @@
+/* SpeedTriangle.css - Обновленная версия по дизайн-системе */
+.speed-triangle-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #0a192f;
+  min-height: 100vh;
+  color: #e6f1ff;
+}
+
+.speed-triangle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.visualization-section {
+  position: sticky;
+  top: 2rem;
+}
+
+/* Стили панели управления */
+.control-panel {
+  background: rgba(26, 111, 196, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.control-panel h3 {
+  color: #64ffda;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.input-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #e6f1ff;
+  font-size: 0.875rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.help-tooltip {
+  cursor: help;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  color: #8892b0;
+}
+
+.number-input {
+  padding: 0.75rem;
+  background: rgba(10, 25, 47, 0.8);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #e6f1ff;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #1a6fc4;
+  box-shadow: 0 0 0 3px rgba(26, 111, 196, 0.2);
+}
+
+.range-slider {
+  width: 100%;
+  height: 6px;
+  margin-top: 0.5rem;
+  background: rgba(136, 146, 176, 0.3);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #1a6fc4;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #0a192f;
+  box-shadow: 0 2px 8px rgba(26, 111, 196, 0.4);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #1a6fc4;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #0a192f;
+  box-shadow: 0 2px 8px rgba(26, 111, 196, 0.4);
+}
+
+.control-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.calculate-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #1a6fc4 0%, #0d8bf2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Exo 2', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calculate-btn:hover {
+  background: linear-gradient(135deg, #0d8bf2 0%, #1a6fc4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 111, 196, 0.4);
+}
+
+.reset-btn {
+  padding: 1rem 1.5rem;
+  background: rgba(136, 146, 176, 0.2);
+  color: #8892b0;
+  border: 1px solid rgba(136, 146, 176, 0.4);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.reset-btn:hover {
+  background: rgba(136, 146, 176, 0.3);
+  color: #e6f1ff;
+}
+
+/* Стили панели результатов */
+.results-panel {
+  background: rgba(26, 111, 196, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.results-panel h3 {
+  color: #64ffda;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.no-results {
+  text-align: center;
+  color: #8892b0;
+  font-style: italic;
+  padding: 2rem;
+  background: rgba(10, 25, 47, 0.5);
+  border-radius: 8px;
+  border: 2px dashed rgba(26, 111, 196, 0.4);
+  font-family: 'Exo 2', sans-serif;
+}
+
+.results-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: rgba(10, 25, 47, 0.6);
+  border-radius: 8px;
+  border-left: 4px solid #1a6fc4;
+  transition: all 0.3s ease;
+}
+
+.result-item:hover {
+  background: rgba(10, 25, 47, 0.8);
+  transform: translateX(5px);
+}
+
+.result-label {
+  font-weight: 500;
+  color: #e6f1ff;
+  font-size: 0.875rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.result-value {
+  font-weight: 600;
+  color: #64ffda;
+  font-size: 1.125rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.result-angle-high {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.result-angle-medium {
+  color: #ffd93d;
+  background: rgba(255, 217, 61, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 217, 61, 0.3);
+}
+
+.result-angle-low {
+  color: #6bff95;
+  background: rgba(107, 255, 149, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(107, 255, 149, 0.3);
+}
+
+/* Стили векторной диаграммы */
+.vector-diagram {
+  background: rgba(26, 111, 196, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.vector-diagram h3 {
+  color: #64ffda;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.diagram-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: rgba(10, 25, 47, 0.5);
+  border: 2px dashed rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  color: #8892b0;
+  font-style: italic;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.vector-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(10, 25, 47, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #e6f1ff;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid rgba(10, 25, 47, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .speed-triangle-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .visualization-section {
+    position: static;
+  }
+  
+  .control-buttons {
+    flex-direction: column;
+  }
+  
+  .vector-legend {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Анимации */
+@keyframes drawVector {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(100, 255, 218, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(100, 255, 218, 0);
+  }
+}
+
+/* Анимации для векторной диаграммы */
+.vector-line {
+  animation: drawVector 1s ease-in-out forwards;
+}
+
+.vector-arrow {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-in-out 1s forwards;
+}
+
+.vector-label {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-in-out 1.2s forwards;
+  paint-order: stroke;
+  stroke: #0a192f;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.origin-point {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-in-out 0.8s forwards;
+}
+
+/* Стили для preset selector */
+.preset-selector {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.preset-selector h4 {
+  color: #64ffda;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  background: rgba(10, 25, 47, 0.6);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Exo 2', sans-serif;
+}
+
+.preset-btn:hover {
+  border-color: #1a6fc4;
+  background: rgba(26, 111, 196, 0.2);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(26, 111, 196, 0.3);
+}
+
+.preset-btn.active {
+  border-color: #64ffda;
+  background: rgba(100, 255, 218, 0.1);
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4);
+}
+
+.preset-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: #e6f1ff;
+}
+
+.preset-name {
+  font-weight: 500;
+  color: #e6f1ff;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+/* Плавные переходы для результатов */
+.results-panel {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.result-item {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.result-item:nth-child(1) { animation-delay: 0.1s; }
+.result-item:nth-child(2) { animation-delay: 0.2s; }
+.result-item:nth-child(3) { animation-delay: 0.3s; }
+
+/* Адаптивность для пресетов */
+@media (max-width: 1024px) {
+  .preset-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+  
+  .preset-name {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Ветровая информация */
+.wind-info-panel {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.wind-info-panel h4 {
+  color: #64ffda;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.wind-info.calm {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #8892b0;
+  font-style: italic;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.wind-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wind-basic {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.wind-speed {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ff6b6b;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.wind-direction {
+  font-size: 1rem;
+  color: #8892b0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.wind-effect {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.effect-type {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: 'Exo 2', sans-serif;
+  border: 1px solid;
+}
+
+.effect-type.встречный { 
+  background: rgba(220, 38, 38, 0.1); 
+  color: #ff6b6b; 
+  border-color: rgba(220, 38, 38, 0.3);
+}
+.effect-type.встречный-справа { 
+  background: rgba(217, 119, 6, 0.1); 
+  color: #ffd93d; 
+  border-color: rgba(217, 119, 6, 0.3);
+}
+.effect-type.боковой-справа { 
+  background: rgba(5, 150, 105, 0.1); 
+  color: #6bff95; 
+  border-color: rgba(5, 150, 105, 0.3);
+}
+.effect-type.попутный-справа { 
+  background: rgba(5, 150, 105, 0.1); 
+  color: #6bff95; 
+  border-color: rgba(5, 150, 105, 0.3);
+}
+.effect-type.попутный { 
+  background: rgba(5, 150, 105, 0.1); 
+  color: #6bff95; 
+  border-color: rgba(5, 150, 105, 0.3);
+}
+.effect-type.попутный-слева { 
+  background: rgba(5, 150, 105, 0.1); 
+  color: #6bff95; 
+  border-color: rgba(5, 150, 105, 0.3);
+}
+.effect-type.боковой-слева { 
+  background: rgba(5, 150, 105, 0.1); 
+  color: #6bff95; 
+  border-color: rgba(5, 150, 105, 0.3);
+}
+.effect-type.встречный-слева { 
+  background: rgba(217, 119, 6, 0.1); 
+  color: #ffd93d; 
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+.wind-angle {
+  font-size: 0.85rem;
+  color: #8892b0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.wind-impact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.wca-value.high { 
+  color: #ff6b6b; 
+  font-weight: 600; 
+  font-family: 'Share Tech Mono', monospace;
+}
+.wca-value.medium { 
+  color: #ffd93d; 
+  font-weight: 600; 
+  font-family: 'Share Tech Mono', monospace;
+}
+.wca-value.low { 
+  color: #6bff95; 
+  font-weight: 600; 
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Ветровой компас */
+.wind-compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.wind-compass h5 {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: #e6f1ff;
+  font-family: 'Exo 2', sans-serif;
+}
+
+/* Заголовок */
+.speed-triangle-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.speed-triangle-header h2 {
+  color: #64ffda;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  font-family: 'Exo 2', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  color: #8892b0;
+  font-size: 1.2rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+/* Итоги расчета */
+.calculation-summary {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(26, 111, 196, 0.15) 0%, rgba(13, 139, 242, 0.1) 100%);
+  border-radius: 16px;
+  border-left: 4px solid #1a6fc4;
+  backdrop-filter: blur(10px);
+}
+
+.calculation-summary h4 {
+  color: #64ffda;
+  margin-bottom: 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.calculation-summary p {
+  color: #e6f1ff;
+  line-height: 1.7;
+  margin: 0;
+  font-size: 1.05rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.calculation-summary strong {
+  color: #64ffda;
+  font-weight: 600;
+}
+
+/* Анимация появления подписей с задержкой */
+.vector-label:nth-child(1) { animation-delay: 1.2s; }
+.vector-label:nth-child(2) { animation-delay: 1.4s; }
+.vector-label:nth-child(3) { animation-delay: 1.6s; }
+.vector-label:nth-child(4) { animation-delay: 1.8s; }

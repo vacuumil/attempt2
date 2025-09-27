@@ -1,0 +1,92 @@
+.vor-radials {
+  pointer-events: none;
+}
+
+.radial-line {
+  transition: all 0.3s ease;
+}
+
+.radial-line.major {
+  stroke: rgba(26, 111, 196, 0.4);
+}
+
+.radial-line.minor {
+  stroke: rgba(26, 111, 196, 0.2);
+}
+
+.radial-line.selected {
+  stroke: #64ffda;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 3px rgba(100, 255, 218, 0.5));
+  animation: pulse-radial 2s ease-in-out infinite;
+}
+
+.radial-line.custom {
+  stroke: #ff6b6b;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 3px rgba(255, 107, 107, 0.5));
+  animation: pulse-custom 1.5s ease-in-out infinite;
+}
+
+.radial-label {
+  font-family: 'Share Tech Mono', monospace;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #0a192f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.radial-label.custom {
+  fill: #ff6b6b;
+  stroke: #0a192f;
+  stroke-width: 3;
+}
+
+.obs-course-label {
+  font-family: 'Share Tech Mono', monospace;
+  paint-order: stroke;
+  stroke: #0a192f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.radials-controls {
+  pointer-events: all;
+}
+
+.radials-control:hover circle,
+.custom-radial-control:hover circle,
+.clear-radial-control:hover circle {
+  fill: rgba(26, 111, 196, 0.5);
+  stroke: #64ffda;
+}
+
+.custom-radial-control:hover circle {
+  fill: rgba(255, 107, 107, 0.5);
+  stroke: #ff6b6b;
+}
+
+@keyframes pulse-radial {
+  0%, 100% {
+    opacity: 1;
+    stroke-width: 3;
+  }
+  50% {
+    opacity: 0.7;
+    stroke-width: 4;
+  }
+}
+
+@keyframes pulse-custom {
+  0%, 100% {
+    opacity: 1;
+    stroke-width: 2.5;
+  }
+  50% {
+    opacity: 0.7;
+    stroke-width: 3.5;
+  }
+}

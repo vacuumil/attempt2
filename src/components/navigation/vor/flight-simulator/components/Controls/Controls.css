@@ -1,0 +1,223 @@
+.flight-controls {
+  background: rgba(17, 34, 64, 0.8);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.flight-controls h3 {
+  color: #64ffda;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.control-group {
+  margin-bottom: 1.5rem;
+}
+
+.control-group label {
+  display: block;
+  color: #8892b0;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.heading-control {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.heading-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(136, 146, 176, 0.15);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  color: #e6f1ff;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.heading-input:focus {
+  outline: none;
+  border-color: #64ffda;
+  box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
+  background: rgba(136, 146, 176, 0.25);
+}
+
+.heading-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.heading-buttons button {
+  padding: 0.5rem;
+  margin: 0;
+  background: rgba(26, 111, 196, 0.3);
+  border: 1px solid rgba(26, 111, 196, 0.5);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.heading-buttons button:hover {
+  background: rgba(26, 111, 196, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Кнопки непрерывного поворота */
+.continuous-turn-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.turn-btn {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(26, 111, 196, 0.3) 0%, rgba(100, 255, 218, 0.2) 100%);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  color: #e6f1ff;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.turn-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(26, 111, 196, 0.3);
+  border-color: #64ffda;
+}
+
+.turn-btn.active {
+  background: linear-gradient(135deg, #64ffda 0%, #1a6fc4 100%);
+  color: #0a192f;
+  border-color: #64ffda;
+  box-shadow: 0 0 20px rgba(100, 255, 218, 0.4);
+}
+
+.turn-btn.left {
+  background: linear-gradient(135deg, rgba(26, 111, 196, 0.4) 0%, rgba(100, 255, 218, 0.3) 100%);
+}
+
+.turn-btn.right {
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.3) 0%, rgba(26, 111, 196, 0.4) 100%);
+}
+
+.movement-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.movement-btn {
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(26, 111, 196, 0.3) 0%, rgba(100, 255, 218, 0.2) 100%);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  color: #e6f1ff;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.movement-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(26, 111, 196, 0.3);
+  border-color: #64ffda;
+}
+
+.movement-btn.active {
+  background: linear-gradient(135deg, #ff6b6b 0%, #c41a1a 100%);
+  border-color: #ff6b6b;
+  color: white;
+}
+
+.movement-btn.step {
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.3) 0%, rgba(26, 111, 196, 0.4) 100%);
+}
+
+.heading-presets {
+  margin-top: 1.5rem;
+}
+
+.preset-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.preset-btn {
+  padding: 0.6rem;
+  background: rgba(136, 146, 176, 0.1);
+  border: 1px solid rgba(136, 146, 176, 0.3);
+  border-radius: 6px;
+  color: #8892b0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(26, 111, 196, 0.3);
+  color: #e6f1ff;
+  border-color: #64ffda;
+  transform: translateY(-1px);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .flight-controls {
+    padding: 1rem;
+  }
+  
+  .heading-control {
+    grid-template-columns: 1fr;
+  }
+  
+  .heading-buttons {
+    flex-direction: row;
+  }
+  
+  .continuous-turn-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .preset-buttons {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .movement-btn {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .turn-btn {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+}

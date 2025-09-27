@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "id": "UWLL_UWWW",
+      "from": "UWLL",
+      "to": "UWWW",
+      "mainPoints": [
+        { "id": "ULV", "lat": 54.4000, "lon": 48.5000, "name": "Ульяновск" },
+        { "id": "TOL", "lat": 54.0000, "lon": 49.5000, "name": "Тольятти" },
+        { "id": "SAM", "lat": 53.7000, "lon": 50.1000, "name": "Самара" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+.vor-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #e6f1ff;
+}
+
+.vor-page-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.vor-page-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #64ffda 0%, #1a6fc4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+}
+
+.vor-subtitle {
+  color: #8892b0;
+  font-size: 1.1rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.vor-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(26, 111, 196, 0.3);
+  padding-bottom: 1rem;
+}
+
+.vor-tab {
+  padding: 1rem 2rem;
+  background: rgba(17, 34, 64, 0.5);
+  border: none;
+  border-radius: 8px;
+  color: #e6f1ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  min-width: 120px;
+}
+
+.vor-tab:hover {
+  background: rgba(26, 111, 196, 0.2);
+  transform: translateY(-2px);
+}
+
+.vor-tab--active {
+  background: linear-gradient(135deg, #64ffda 0%, #1a6fc4 100%);
+  color: #0a192f;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(26, 111, 196, 0.3);
+}
+
+.vor-tab-content {
+  min-height: 500px;
+  background: rgba(10, 25, 47, 0.6);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .vor-page {
+    padding: 1rem;
+  }
+  
+  .vor-tabs {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .vor-tab {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .vor-tab-content {
+    padding: 1rem;
+  }
+}

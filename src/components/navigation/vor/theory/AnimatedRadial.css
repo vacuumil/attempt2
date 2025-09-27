@@ -1,0 +1,67 @@
+.animated-radial {
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.radial-svg {
+  width: 300px;
+  height: 300px;
+  border-radius: 8px;
+  background: rgba(10, 25, 47, 0.8);
+}
+
+.station-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.radial-line {
+  animation: radialAppear 1s ease-out forwards;
+  opacity: 0;
+}
+
+.aircraft {
+  animation: aircraftFloat 3s ease-in-out infinite;
+}
+
+.radial-explanation {
+  text-align: center;
+  max-width: 400px;
+}
+
+.radial-explanation h4 {
+  color: #64ffda;
+  margin-bottom: 0.5rem;
+}
+
+.radial-explanation p {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+@keyframes pulse {
+  0%, 100% { r: 8; opacity: 1; }
+  50% { r: 12; opacity: 0.7; }
+}
+
+@keyframes radialAppear {
+  from {
+    stroke-dashoffset: 20;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0.7;
+  }
+}
+
+@keyframes aircraftFloat {
+  0%, 100% { transform: translate(150px, 100px) rotate(0deg); }
+  50% { transform: translate(150px, 95px) rotate(2deg); }
+}

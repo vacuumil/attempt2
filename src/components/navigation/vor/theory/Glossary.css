@@ -1,0 +1,108 @@
+.glossary-container {
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  margin-bottom: 2rem;
+}
+
+.glossary-container h3 {
+  color: #64ffda;
+  margin-bottom: 1rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.glossary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.glossary-item {
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(10, 25, 47, 0.6);
+}
+
+.glossary-term-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: #e6f1ff;
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.glossary-term-button:hover {
+  background: rgba(26, 111, 196, 0.2);
+}
+
+.term-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.term-text {
+  flex-grow: 1;
+  font-weight: 500;
+}
+
+.term-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  padding: 0.25rem;
+}
+
+.copy-button:hover {
+  opacity: 1;
+}
+
+.term-arrow {
+  color: #8892b0;
+  font-size: 0.8rem;
+}
+
+.glossary-definition {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  opacity: 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.glossary-term-button[aria-expanded="true"] + .glossary-definition {
+  max-height: 200px;
+  opacity: 1;
+  padding: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(26, 111, 196, 0.3);
+}
+
+@media (max-width: 768px) {
+  .glossary-term-button {
+    padding: 0.75rem;
+  }
+  
+  .term-actions {
+    gap: 0.25rem;
+  }
+}

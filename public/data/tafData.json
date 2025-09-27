@@ -1,0 +1,263 @@
+[
+  {
+    "icao": "UUEE",
+    "raw_text": "UUEE 141100Z 1412/1512 21006MPS 9999 SCT030 TX20/1418Z TN10/1506Z",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 210,
+          "speed_kts": 12
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "SCT",
+            "altitude_ft": 3000
+          }
+        ]
+      },
+      {
+        "timestamp": "2023-10-14T18:00:00Z",
+        "wind": {
+          "degrees": 220,
+          "speed_kts": 8
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "FEW",
+            "altitude_ft": 2500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "UUDD",
+    "raw_text": "UUDD 141100Z 1412/1512 18010G18KT 9999 BKN015 OVC025 TEMPO 1412/1418 4000 RA",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 180,
+          "speed_kts": 10,
+          "gust_kts": 18
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "BKN",
+            "altitude_ft": 1500
+          },
+          {
+            "cover": "OVC",
+            "altitude_ft": 2500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "KSFO",
+    "raw_text": "KSFO 141100Z 1412/1512 25015KT 10SM FEW020 SCT040 FM141800 28012KT P6SM SKC",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 250,
+          "speed_kts": 15
+        },
+        "visibility": {
+          "miles": "10"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "FEW",
+            "altitude_ft": 2000
+          },
+          {
+            "cover": "SCT",
+            "altitude_ft": 4000
+          }
+        ]
+      },
+      {
+        "timestamp": "2023-10-14T18:00:00Z",
+        "wind": {
+          "degrees": 280,
+          "speed_kts": 12
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": []
+      }
+    ]
+  },
+  {
+    "icao": "EGLL",
+    "raw_text": "EGLL 141100Z 1412/1512 24018G28KT 6000 -RA BKN010 OVC015 TEMPO 1412/1418 4000 RA",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 240,
+          "speed_kts": 18,
+          "gust_kts": 28
+        },
+        "visibility": {
+          "miles": "4"
+        },
+        "conditions": ["-RA"],
+        "clouds": [
+          {
+            "cover": "BKN",
+            "altitude_ft": 1000
+          },
+          {
+            "cover": "OVC",
+            "altitude_ft": 1500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "LFPG",
+    "raw_text": "LFPG 141100Z 1412/1512 28012KT 9999 FEW030 BKN100 BECMG 1418/1420 26008KT",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 280,
+          "speed_kts": 12
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "FEW",
+            "altitude_ft": 3000
+          },
+          {
+            "cover": "BKN",
+            "altitude_ft": 10000
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "RJTT",
+    "raw_text": "RJTT 141100Z 1412/1512 VRB05KT 9999 FEW025 SCT035 TX26/1418Z TN18/1506Z",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 0,
+          "speed_kts": 5,
+          "variable": true
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": [
+          {
+            "cover": "FEW",
+            "altitude_ft": 2500
+          },
+          {
+            "cover": "SCT",
+            "altitude_ft": 3500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "EDDF",
+    "raw_text": "EDDF 141100Z 1412/1512 23020G30KT 4000 TSRA BKN012CB OVC020 TEMPO 1412/1418 2000 +TSRA",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 230,
+          "speed_kts": 20,
+          "gust_kts": 30
+        },
+        "visibility": {
+          "miles": "2.5"
+        },
+        "conditions": ["TSRA"],
+        "clouds": [
+          {
+            "cover": "BKN",
+            "altitude_ft": 1200,
+            "type": "CB"
+          },
+          {
+            "cover": "OVC",
+            "altitude_ft": 2000
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "icao": "OMDB",
+    "raw_text": "OMDB 141100Z 1412/1512 36008KT CAVOK TX42/1415Z TN30/1503Z",
+    "issued": "2023-10-14T11:00:00Z",
+    "valid_from": "2023-10-14T12:00:00Z",
+    "valid_to": "2023-10-15T12:00:00Z",
+    "forecasts": [
+      {
+        "timestamp": "2023-10-14T12:00:00Z",
+        "wind": {
+          "degrees": 360,
+          "speed_kts": 8
+        },
+        "visibility": {
+          "miles": "6+"
+        },
+        "conditions": [],
+        "clouds": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,109 @@
+/* src/components/flight-simulator/components/Map/VorMap.css */
+.vor-map {
+  background: rgba(10, 25, 47, 0.8);
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.4);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.vor-map-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  border-radius: 8px;
+}
+
+.map-info-panel text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.aircraft-line line {
+  pointer-events: none;
+}
+
+.vor-station circle {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.vor-station:hover circle {
+  fill: #64ffda;
+  stroke: #1a6fc4;
+  r: 14;
+}
+
+.station-label {
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.station-frequency {
+  font-family: 'Share Tech Mono', monospace;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.radial-line line {
+  stroke: rgba(100, 255, 218, 0.8);
+  stroke-width: 2;
+  stroke-dasharray: 8,4;
+}
+
+.radial-line text {
+  fill: #64ffda;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(10, 25, 47, 0.9);
+  font-family: 'Exo 2', sans-serif;
+}
+
+.wind-visualization {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.wind-visualization:hover {
+  opacity: 1;
+}
+
+.mission-target text {
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  font-family: 'Exo 2', sans-serif;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .vor-map-svg {
+    min-height: 400px;
+  }
+  
+  .map-info-panel {
+    transform: scale(0.8);
+    transform-origin: 0 0;
+  }
+  
+  .station-label {
+    font-size: 12px;
+  }
+  
+  .station-frequency {
+    font-size: 10px;
+  }
+  
+  .radial-line text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vor-map-svg {
+    min-height: 350px;
+  }
+  
+  .map-info-panel {
+    transform: scale(0.7);
+  }
+}

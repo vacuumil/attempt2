@@ -1,0 +1,180 @@
+/* src/components/flight-simulator/components/Instrument/WindIndicator.css */
+.wind-indicator {
+  background: rgba(17, 34, 64, 0.8);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.wind-indicator h4 {
+  color: #64ffda;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.wind-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(10, 25, 47, 0.4);
+  border-radius: 8px;
+}
+
+.wind-direction {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(100, 255, 218, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.wind-arrow {
+  font-size: 2rem;
+  color: #64ffda;
+  transition: transform 0.5s ease;
+  text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+}
+
+.wind-info {
+  text-align: center;
+}
+
+.wind-speed {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #e6f1ff;
+  font-family: 'Share Tech Mono', monospace;
+  margin-bottom: 0.25rem;
+}
+
+.wind-degrees {
+  font-size: 1rem;
+  color: #8892b0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.wind-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wind-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #e6f1ff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.75rem;
+  background: rgba(136, 146, 176, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.wind-toggle:hover {
+  background: rgba(136, 146, 176, 0.2);
+}
+
+.wind-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 50px;
+  height: 24px;
+  background: rgba(136, 146, 176, 0.3);
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #8892b0;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s ease;
+}
+
+.wind-toggle input:checked + .toggle-slider {
+  background: rgba(100, 255, 218, 0.3);
+}
+
+.wind-toggle input:checked + .toggle-slider::before {
+  background: #64ffda;
+  left: 28px;
+}
+
+.generate-wind-btn {
+  padding: 0.75rem;
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.2) 0%, rgba(26, 111, 196, 0.3) 100%);
+  border: 2px solid rgba(26, 111, 196, 0.4);
+  border-radius: 8px;
+  color: #e6f1ff;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.generate-wind-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(26, 111, 196, 0.3);
+  border-color: #64ffda;
+}
+
+.wind-status {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(136, 146, 176, 0.1);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #8892b0;
+  border-left: 3px solid #8892b0;
+}
+
+.wind-status.active {
+  background: rgba(100, 255, 218, 0.1);
+  color: #64ffda;
+  border-left-color: #64ffda;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .wind-indicator {
+    padding: 1rem;
+  }
+  
+  .wind-visual {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+  
+  .wind-direction {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .wind-arrow {
+    font-size: 1.5rem;
+  }
+  
+  .wind-speed {
+    font-size: 1.2rem;
+  }
+}

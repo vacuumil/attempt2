@@ -1,0 +1,126 @@
+.interactive-indicator {
+  display: flex;
+  gap: 2rem;
+  margin: 2rem 0;
+  align-items: flex-start;
+}
+
+.indicator-visual {
+  flex: 1;
+  min-height: 300px;
+  background: rgba(10, 25, 47, 0.8);
+  border-radius: 12px;
+  border: 2px solid rgba(26, 111, 196, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.indicator-image {
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(145deg, #112240 0%, #1a3a5f 100%);
+  border-radius: 50%;
+  position: relative;
+  border: 3px solid #1a6fc4;
+  box-shadow: 0 0 20px rgba(26, 111, 196, 0.4);
+}
+
+.indicator-part {
+  position: absolute;
+  background: rgba(100, 255, 218, 0.2);
+  border: 2px dashed transparent;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  cursor: help;
+}
+
+.indicator-part:hover,
+.indicator-part.active {
+  background: rgba(100, 255, 218, 0.4);
+  border-color: #64ffda;
+  z-index: 10;
+}
+
+/* Позиционирование элементов для CDI */
+.indicator-cdi .indicator-part[data-part="needle"] {
+  width: 180px;
+  height: 4px;
+  background: #ff6b6b;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.indicator-cdi .indicator-part[data-part="to-from"] {
+  width: 60px;
+  height: 30px;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64ffda;
+  font-weight: bold;
+  content: "TO";
+}
+
+.indicator-cdi .indicator-part[data-part="obs-knob"] {
+  width: 40px;
+  height: 40px;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  background: #8892b0;
+}
+
+.indicator-cdi .indicator-part[data-part="frequency"] {
+  width: 80px;
+  height: 30px;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e6f1ff;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.indicator-info {
+  flex: 1;
+  min-height: 200px;
+}
+
+.element-tooltip {
+  background: rgba(17, 34, 64, 0.9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #64ffda;
+}
+
+.element-tooltip h4 {
+  color: #64ffda;
+  margin-bottom: 0.5rem;
+}
+
+.element-tooltip p {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .interactive-indicator {
+    flex-direction: column;
+  }
+  
+  .indicator-visual {
+    min-height: 250px;
+  }
+  
+  .indicator-image {
+    width: 200px;
+    height: 200px;
+  }
+}

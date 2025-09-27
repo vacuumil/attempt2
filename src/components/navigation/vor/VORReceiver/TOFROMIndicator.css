@@ -1,0 +1,106 @@
+.tofrom-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.indicator-label {
+  color: #8892b0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.indicator-display {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: #0a192f;
+  border: 2px solid #4a6f9a;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.indicator-display.to {
+  border-color: #6bff95;
+  box-shadow: 0 0 8px rgba(107, 255, 149, 0.3);
+}
+
+.indicator-display.from {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+}
+
+.indicator-display.off {
+  opacity: 0.6;
+}
+
+.to-arrow,
+.from-arrow {
+  color: #4a6f9a;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.active-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-arrow {
+  font-size: 1.4rem;
+  font-weight: bold;
+  animation: blink 2s ease-in-out infinite;
+}
+
+.indicator-display.to .active-arrow {
+  color: #6bff95;
+  margin-left: 8px;
+}
+
+.indicator-display.from .active-arrow {
+  color: #ff6b6b;
+  margin-right: 8px;
+}
+
+.off-text {
+  color: #8892b0;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .indicator-display {
+    width: 50px;
+    height: 25px;
+  }
+  
+  .to-arrow,
+  .from-arrow {
+    font-size: 1rem;
+  }
+  
+  .active-arrow {
+    font-size: 1.2rem;
+  }
+}

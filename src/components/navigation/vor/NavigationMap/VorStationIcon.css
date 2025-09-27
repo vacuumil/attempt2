@@ -1,0 +1,39 @@
+.vor-station {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vor-station:hover .station-outer {
+  stroke: #64ffda;
+  fill: rgba(100, 255, 218, 0.1);
+}
+
+.vor-station:hover .station-inner {
+  fill: #64ffda;
+}
+
+.vor-station.selected .station-outer {
+  stroke: #64ffda;
+  stroke-width: 3;
+  animation: pulse-station 2s infinite;
+}
+
+@keyframes pulse-station {
+  0%, 100% {
+    stroke-width: 3;
+    opacity: 1;
+  }
+  50% {
+    stroke-width: 5;
+    opacity: 0.7;
+  }
+}
+
+.station-label {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.station-frequency {
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.8;
+}

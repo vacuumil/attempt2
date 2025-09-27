@@ -1,0 +1,210 @@
+.vor-receiver {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a75 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 3px solid #3a5f8a;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 2px 10px rgba(255, 255, 255, 0.1);
+  font-family: 'Share Tech Mono', monospace;
+  min-width: 280px;
+}
+
+.receiver-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.receiver-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #4a6f9a;
+}
+
+.receiver-header h3 {
+  color: #64ffda;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.signal-indicator {
+  font-size: 0.8rem;
+  color: #8892b0;
+}
+
+.signal-indicator.valid {
+  color: #6bff95;
+}
+
+.signal-indicator.invalid {
+  color: #ff6b6b;
+}
+
+.frequency-display {
+  background: #0a192f;
+  border: 2px solid #1a6fc4;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.frequency-label {
+  color: #8892b0;
+  font-size: 0.7rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.frequency-value {
+  color: #64ffda;
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.frequency-unit {
+  color: #8892b0;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+/* НОВАЯ СТРУКТУРА OBS КОНТЕЙНЕРА */
+.obs-container {
+  background: rgba(10, 25, 47, 0.5);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+}
+
+.obs-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.obs-label {
+  color: #8892b0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+.obs-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.obs-display-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: 1;
+}
+
+.obs-course-display {
+  background: #0a192f;
+  border: 2px solid #1a6fc4;
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.course-label {
+  color: #8892b0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.course-value {
+  color: #ffd93d;
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.tofrom-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.tofrom-label {
+  color: #8892b0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.obs-control-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+  .vor-receiver {
+    padding: 1rem;
+    min-width: 250px;
+  }
+  
+  .frequency-value {
+    font-size: 1.5rem;
+  }
+  
+  .obs-container {
+    padding: 0.8rem;
+  }
+  
+  .course-value {
+    font-size: 1.3rem;
+  }
+  
+  .obs-layout {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .obs-display-section {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .obs-course-display {
+    flex: 1;
+    margin-right: 0.5rem;
+  }
+  
+  .tofrom-display {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .receiver-panel {
+    gap: 1rem;
+  }
+  
+  .obs-container {
+    padding: 0.6rem;
+  }
+  
+  .obs-display-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .obs-course-display {
+    margin-right: 0;
+    width: 100%;
+  }
+}

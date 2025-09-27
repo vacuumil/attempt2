@@ -1,0 +1,122 @@
+[
+  {
+    "icao": "UUEE",
+    "iata": "SVO",
+    "name": "Sheremetyevo International Airport",
+    "city": "Moscow",
+    "country": "Russia",
+    "elevation_ft": 622,
+    "latitude": 55.972599,
+    "longitude": 37.414601
+  },
+  {
+    "icao": "UUDD",
+    "iata": "DME",
+    "name": "Domodedovo International Airport",
+    "city": "Moscow",
+    "country": "Russia",
+    "elevation_ft": 588,
+    "latitude": 55.408798,
+    "longitude": 37.9063
+  },
+  {
+    "icao": "KSFO",
+    "iata": "SFO",
+    "name": "San Francisco International Airport",
+    "city": "San Francisco",
+    "country": "United States",
+    "elevation_ft": 13,
+    "latitude": 37.618999,
+    "longitude": -122.375
+  },
+  {
+    "icao": "EGLL",
+    "iata": "LHR",
+    "name": "Heathrow Airport",
+    "city": "London",
+    "country": "United Kingdom",
+    "elevation_ft": 83,
+    "latitude": 51.4706,
+    "longitude": -0.461941
+  },
+  {
+    "icao": "LFPG",
+    "iata": "CDG",
+    "name": "Charles de Gaulle Airport",
+    "city": "Paris",
+    "country": "France",
+    "elevation_ft": 392,
+    "latitude": 49.012798,
+    "longitude": 2.55
+  },
+  {
+    "icao": "RJTT",
+    "iata": "HND",
+    "name": "Tokyo International Airport",
+    "city": "Tokyo",
+    "country": "Japan",
+    "elevation_ft": 35,
+    "latitude": 35.552299,
+    "longitude": 139.779999
+  },
+  {
+    "icao": "YSSY",
+    "iata": "SYD",
+    "name": "Sydney Airport",
+    "city": "Sydney",
+    "country": "Australia",
+    "elevation_ft": 21,
+    "latitude": -33.946098,
+    "longitude": 151.177002
+  },
+  {
+    "icao": "EDDF",
+    "iata": "FRA",
+    "name": "Frankfurt Airport",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "elevation_ft": 364,
+    "latitude": 50.033333,
+    "longitude": 8.570556
+  },
+  {
+    "icao": "OMDB",
+    "iata": "DXB",
+    "name": "Dubai International Airport",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "elevation_ft": 62,
+    "latitude": 25.2528,
+    "longitude": 55.364399
+  },
+  {
+    "icao": "ZBAA",
+    "iata": "PEK",
+    "name": "Beijing Capital International Airport",
+    "city": "Beijing",
+    "country": "China",
+    "elevation_ft": 116,
+    "latitude": 40.080101,
+    "longitude": 116.584999
+  },
+  {
+    "icao": "KJFK",
+    "iata": "JFK",
+    "name": "John F. Kennedy International Airport",
+    "city": "New York",
+    "country": "United States",
+    "elevation_ft": 13,
+    "latitude": 40.639801,
+    "longitude": -73.7789
+  },
+  {
+    "icao": "WSSS",
+    "iata": "SIN",
+    "name": "Singapore Changi Airport",
+    "city": "Singapore",
+    "country": "Singapore",
+    "elevation_ft": 22,
+    "latitude": 1.35019,
+    "longitude": 103.994003
+  }
+]

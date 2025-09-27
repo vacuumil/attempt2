@@ -1,0 +1,542 @@
+[
+  {
+    "icao": "UUEE",
+    "raw_text": "UUEE 141330Z 21005MPS 9999 SCT030 18/12 Q1011 R06L/290195 NOSIG",
+    "station": {
+      "name": "Sheremetyevo International Airport",
+      "location": "Moscow, Russia",
+      "elevation_ft": 622,
+      "latitude": 55.972599,
+      "longitude": 37.414601,
+      "runways": [
+        { "designator": "06L", "heading": 62, "length_ft": 12467, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "06R", "heading": 62, "length_ft": 12467, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "24L", "heading": 242, "length_ft": 12467, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "24R", "heading": 242, "length_ft": 12467, "width_ft": 200, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 210,
+      "speed_kts": 10,
+      "gust_kts": null,
+      "variable": false,
+      "direction_from": null,
+      "direction_to": null
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+",
+      "cavok": false
+    },
+    "conditions": [],
+    "clouds": [
+      {
+        "cover": "SCT",
+        "altitude_ft": 3000,
+        "type": null,
+        "density": "medium"
+      }
+    ],
+    "temperature": {
+      "celsius": 18,
+      "fahrenheit": 64
+    },
+    "dewpoint": {
+      "celsius": 12,
+      "fahrenheit": 54
+    },
+    "humidity_percent": 68,
+    "barometer": {
+      "hg": 29.85,
+      "mb": 1011,
+      "hpa": 1011
+    },
+    "runway_visibility": [
+      {
+        "runway": "06L",
+        "visibility_meters": 2900,
+        "trend": "improving"
+      }
+    ],
+    "flight_category": "VFR",
+    "trend": "NOSIG",
+    "remarks": "No significant changes expected"
+  },
+  {
+    "icao": "UUDD",
+    "raw_text": "UUDD 141330Z 18008G15KT 9999 BKN015 OVC025 16/14 Q1009 R14R/290195",
+    "station": {
+      "name": "Domodedovo International Airport",
+      "location": "Moscow, Russia",
+      "elevation_ft": 588,
+      "latitude": 55.408798,
+      "longitude": 37.9063,
+      "runways": [
+        { "designator": "14L", "heading": 141, "length_ft": 11811, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "14R", "heading": 141, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "32L", "heading": 321, "length_ft": 11811, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "32R", "heading": 321, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 180,
+      "speed_kts": 8,
+      "gust_kts": 15,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+"
+    },
+    "conditions": ["RA"],
+    "clouds": [
+      {
+        "cover": "BKN",
+        "altitude_ft": 1500,
+        "type": "ST"
+      },
+      {
+        "cover": "OVC",
+        "altitude_ft": 2500,
+        "type": "ST"
+      }
+    ],
+    "temperature": {
+      "celsius": 16,
+      "fahrenheit": 61
+    },
+    "dewpoint": {
+      "celsius": 14,
+      "fahrenheit": 57
+    },
+    "humidity_percent": 88,
+    "barometer": {
+      "hg": 29.80,
+      "mb": 1009
+    },
+    "flight_category": "MVFR"
+  },
+  {
+    "icao": "KSFO",
+    "raw_text": "KSFO 141330Z 25012KT 10SM FEW020 SCT040 22/18 A2992",
+    "station": {
+      "name": "San Francisco International Airport",
+      "location": "California, USA",
+      "elevation_ft": 13,
+      "latitude": 37.618999,
+      "longitude": -122.375,
+      "runways": [
+        { "designator": "10L", "heading": 102, "length_ft": 7500, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "10R", "heading": 102, "length_ft": 11000, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "28L", "heading": 282, "length_ft": 7500, "width_ft": 200, "surface": "ASPH" },
+        { "designator": "28R", "heading": 282, "length_ft": 11000, "width_ft": 200, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 250,
+      "speed_kts": 12,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "10",
+      "meters": "16000"
+    },
+    "conditions": [],
+    "clouds": [
+      {
+        "cover": "FEW",
+        "altitude_ft": 2000,
+        "type": "CU"
+      },
+      {
+        "cover": "SCT",
+        "altitude_ft": 4000,
+        "type": "CU"
+      }
+    ],
+    "temperature": {
+      "celsius": 22,
+      "fahrenheit": 72
+    },
+    "dewpoint": {
+      "celsius": 18,
+      "fahrenheit": 64
+    },
+    "humidity_percent": 79,
+    "barometer": {
+      "hg": 29.92,
+      "mb": 1013
+    },
+    "flight_category": "VFR"
+  },
+  {
+    "icao": "EGLL",
+    "raw_text": "EGLL 141330Z 24015G25KT 4000 RA BKN008 OVC015 12/10 Q1004",
+    "station": {
+      "name": "Heathrow Airport",
+      "location": "London, UK",
+      "elevation_ft": 83,
+      "latitude": 51.4706,
+      "longitude": -0.461941,
+      "runways": [
+        { "designator": "09L", "heading": 89, "length_ft": 12802, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "09R", "heading": 89, "length_ft": 12802, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "27L", "heading": 269, "length_ft": 12802, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "27R", "heading": 269, "length_ft": 12802, "width_ft": 148, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 240,
+      "speed_kts": 15,
+      "gust_kts": 25,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "2.5",
+      "meters": "4000"
+    },
+    "conditions": ["RA"],
+    "clouds": [
+      {
+        "cover": "BKN",
+        "altitude_ft": 800,
+        "type": "ST"
+      },
+      {
+        "cover": "OVC",
+        "altitude_ft": 1500,
+        "type": "ST"
+      }
+    ],
+    "temperature": {
+      "celsius": 12,
+      "fahrenheit": 54
+    },
+    "dewpoint": {
+      "celsius": 10,
+      "fahrenheit": 50
+    },
+    "humidity_percent": 88,
+    "barometer": {
+      "hg": 29.65,
+      "mb": 1004
+    },
+    "flight_category": "IFR"
+  },
+  {
+    "icao": "LFPG",
+    "raw_text": "LFPG 141330Z 28010KT 9999 FEW030 BKN100 15/09 Q1015",
+    "station": {
+      "name": "Charles de Gaulle Airport",
+      "location": "Paris, France",
+      "elevation_ft": 392,
+      "latitude": 49.012798,
+      "longitude": 2.55,
+      "runways": [
+        { "designator": "08L", "heading": 80, "length_ft": 13812, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "08R", "heading": 80, "length_ft": 13812, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "09L", "heading": 90, "length_ft": 13812, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "09R", "heading": 90, "length_ft": 13812, "width_ft": 148, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 280,
+      "speed_kts": 10,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+"
+    },
+    "conditions": [],
+    "clouds": [
+      {
+        "cover": "FEW",
+        "altitude_ft": 3000,
+        "type": "CU"
+      },
+      {
+        "cover": "BKN",
+        "altitude_ft": 10000,
+        "type": "CI"
+      }
+    ],
+    "temperature": {
+      "celsius": 15,
+      "fahrenheit": 59
+    },
+    "dewpoint": {
+      "celsius": 9,
+      "fahrenheit": 48
+    },
+    "humidity_percent": 71,
+    "barometer": {
+      "hg": 29.97,
+      "mb": 1015
+    },
+    "flight_category": "VFR"
+  },
+  {
+    "icao": "RJTT",
+    "raw_text": "RJTT 141330Z 07008KT 9999 FEW020 SCT030 24/18 Q1010",
+    "station": {
+      "name": "Tokyo International Airport",
+      "location": "Tokyo, Japan",
+      "elevation_ft": 35,
+      "latitude": 35.552299,
+      "longitude": 139.779999,
+      "runways": [
+        { "designator": "16L", "heading": 163, "length_ft": 9843, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "16R", "heading": 163, "length_ft": 9843, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "34L", "heading": 343, "length_ft": 9843, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "34R", "heading": 343, "length_ft": 9843, "width_ft": 197, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 70,
+      "speed_kts": 8,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+"
+    },
+    "conditions": [],
+    "clouds": [
+      {
+        "cover": "FEW",
+        "altitude_ft": 2000,
+        "type": "CU"
+      },
+      {
+        "cover": "SCT",
+        "altitude_ft": 3000,
+        "type": "CU"
+      }
+    ],
+    "temperature": {
+      "celsius": 24,
+      "fahrenheit": 75
+    },
+    "dewpoint": {
+      "celsius": 18,
+      "fahrenheit": 64
+    },
+    "humidity_percent": 70,
+    "barometer": {
+      "hg": 29.83,
+      "mb": 1010
+    },
+    "flight_category": "VFR"
+  },
+  {
+    "icao": "YSSY",
+    "raw_text": "YSSY 141330Z 15012KT 9999 FEW025 22/15 Q1018",
+    "station": {
+      "name": "Sydney Airport",
+      "location": "Sydney, Australia",
+      "elevation_ft": 21,
+      "latitude": -33.946098,
+      "longitude": 151.177002,
+      "runways": [
+        { "designator": "16L", "heading": 160, "length_ft": 13112, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "16R", "heading": 160, "length_ft": 13112, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "34L", "heading": 340, "length_ft": 13112, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "34R", "heading": 340, "length_ft": 13112, "width_ft": 148, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 150,
+      "speed_kts": 12,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+"
+    },
+    "conditions": [],
+    "clouds": [
+      {
+        "cover": "FEW",
+        "altitude_ft": 2500,
+        "type": "CU"
+      }
+    ],
+    "temperature": {
+      "celsius": 22,
+      "fahrenheit": 72
+    },
+    "dewpoint": {
+      "celsius": 15,
+      "fahrenheit": 59
+    },
+    "humidity_percent": 64,
+    "barometer": {
+      "hg": 30.06,
+      "mb": 1018
+    },
+    "flight_category": "VFR"
+  },
+  {
+    "icao": "EDDF",
+    "raw_text": "EDDF 141330Z 23018G28KT 5000 TSRA BKN012CB OVC020 14/12 Q1002",
+    "station": {
+      "name": "Frankfurt Airport",
+      "location": "Frankfurt, Germany",
+      "elevation_ft": 364,
+      "latitude": 50.033333,
+      "longitude": 8.570556,
+      "runways": [
+        { "designator": "07L", "heading": 72, "length_ft": 13123, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "07R", "heading": 72, "length_ft": 13123, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "18", "heading": 180, "length_ft": 13123, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "25L", "heading": 250, "length_ft": 13123, "width_ft": 148, "surface": "ASPH" },
+        { "designator": "25R", "heading": 250, "length_ft": 13123, "width_ft": 148, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 230,
+      "speed_kts": 18,
+      "gust_kts": 28,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "3",
+      "meters": "5000"
+    },
+    "conditions": ["TSRA"],
+    "clouds": [
+      {
+        "cover": "BKN",
+        "altitude_ft": 1200,
+        "type": "CB"
+      },
+      {
+        "cover": "OVC",
+        "altitude_ft": 2000,
+        "type": "ST"
+      }
+    ],
+    "temperature": {
+      "celsius": 14,
+      "fahrenheit": 57
+    },
+    "dewpoint": {
+      "celsius": 12,
+      "fahrenheit": 54
+    },
+    "humidity_percent": 85,
+    "barometer": {
+      "hg": 29.59,
+      "mb": 1002
+    },
+    "flight_category": "IFR"
+  },
+  {
+    "icao": "OMDB",
+    "raw_text": "OMDB 141330Z 36005KT CAVOK 38/22 Q1009",
+    "station": {
+      "name": "Dubai International Airport",
+      "location": "Dubai, UAE",
+      "elevation_ft": 62,
+      "latitude": 25.2528,
+      "longitude": 55.364399,
+      "runways": [
+        { "designator": "12L", "heading": 120, "length_ft": 13123, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "12R", "heading": 120, "length_ft": 13123, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "30L", "heading": 300, "length_ft": 13123, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "30R", "heading": 300, "length_ft": 13123, "width_ft": 197, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 360,
+      "speed_kts": 5,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "6+",
+      "meters": "10000+",
+      "cavok": true
+    },
+    "conditions": [],
+    "clouds": [],
+    "temperature": {
+      "celsius": 38,
+      "fahrenheit": 100
+    },
+    "dewpoint": {
+      "celsius": 22,
+      "fahrenheit": 72
+    },
+    "humidity_percent": 38,
+    "barometer": {
+      "hg": 29.80,
+      "mb": 1009
+    },
+    "flight_category": "VFR"
+  },
+  {
+    "icao": "ZBAA",
+    "raw_text": "ZBAA 141330Z 02006KT 3000 FU SCT010 08/04 Q1030",
+    "station": {
+      "name": "Beijing Capital International Airport",
+      "location": "Beijing, China",
+      "elevation_ft": 116,
+      "latitude": 40.080101,
+      "longitude": 116.584999,
+      "runways": [
+        { "designator": "18L", "heading": 181, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "18R", "heading": 181, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "36L", "heading": 361, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" },
+        { "designator": "36R", "heading": 361, "length_ft": 12467, "width_ft": 197, "surface": "ASPH" }
+      ]
+    },
+    "observed": "2023-10-14T13:30:00Z",
+    "wind": {
+      "degrees": 20,
+      "speed_kts": 6,
+      "gust_kts": null,
+      "variable": false
+    },
+    "visibility": {
+      "miles": "1.8",
+      "meters": "3000"
+    },
+    "conditions": ["FU"],
+    "clouds": [
+      {
+        "cover": "SCT",
+        "altitude_ft": 1000,
+        "type": "ST"
+      }
+    ],
+    "temperature": {
+      "celsius": 8,
+      "fahrenheit": 46
+    },
+    "dewpoint": {
+      "celsius": 4,
+      "fahrenheit": 39
+    },
+    "humidity_percent": 75,
+    "barometer": {
+      "hg": 30.42,
+      "mb": 1030
+    },
+    "flight_category": "IFR"
+  }
+]

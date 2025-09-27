@@ -1,0 +1,105 @@
+.indicator-card {
+  background: linear-gradient(145deg, #112240 0%, #1a3a5f 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  animation: cardAppear 0.6s ease-out;
+}
+
+.indicator-card h4 {
+  color: #64ffda;
+  margin-bottom: 0.75rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.indicator-description {
+  color: #e6f1ff;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.indicator-features h5 {
+  color: #1a6fc4;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.indicator-features ul {
+  color: #cbd5e1;
+  padding-left: 1.2rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.indicator-features li {
+  margin-bottom: 0.3rem;
+  line-height: 1.4;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: flex-start;
+}
+
+.indicator-features li:hover {
+  transform: translateX(5px);
+}
+
+.feature-icon {
+  margin-right: 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.8;
+  flex-shrink: 0;
+  margin-top: 0.1em;
+}
+
+.indicator-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #64ffda, #1a6fc4);
+}
+
+.indicator-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(26, 111, 196, 0.25);
+}
+
+.indicator-card:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.indicator-card.cdi::before {
+  background: linear-gradient(90deg, #64ffda, #00b4d8);
+}
+
+.indicator-card.hsi::before {
+  background: linear-gradient(90deg, #1a6fc4, #6930c3);
+}
+
+.indicator-card:nth-child(1) { animation-delay: 0.1s; }
+.indicator-card:nth-child(2) { animation-delay: 0.2s; }
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .indicator-card {
+    padding: 1.5rem;
+  }
+}

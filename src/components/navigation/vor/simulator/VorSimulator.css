@@ -1,0 +1,284 @@
+.vor-simulator {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 100px);
+  gap: 1.5rem;
+}
+
+.simulator-header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-header h2 {
+  color: #64ffda;
+  margin-bottom: 0.5rem;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8rem;
+}
+
+.simulator-description {
+  color: #8892b0;
+  font-size: 1rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+/* НОВАЯ СТРУКТУРА ГРИДА */
+.simulator-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  gap: 1.5rem;
+  grid-template-areas: 
+    "map receiver"
+    "cdi receiver"
+    "info info";
+  flex: 1;
+  min-height: 0;
+}
+
+.map-container {
+  grid-area: map;
+  background: rgba(10, 25, 47, 0.8);
+  border-radius: 12px;
+  border: 2px solid rgba(26, 111, 196, 0.3);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.receiver-container {
+  grid-area: receiver;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cdi-panel {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a75 100%);
+  border-radius: 12px;
+  padding: 1.2rem;
+  border: 2px solid #3a5f8a;
+  grid-column: span 1;
+}
+
+.cdi-panel-header h3 {
+  color: #64ffda;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cdi-visualization {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cdi-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.cdi-tofrom-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  background: rgba(10, 25, 47, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 255, 218, 0.3);
+}
+
+.tofrom-label {
+  color: #8892b0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.cdi-data-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  background: rgba(10, 25, 47, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 255, 218, 0.3);
+}
+
+.cdi-data-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cdi-data-label {
+  color: #8892b0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cdi-data-value {
+  color: #64ffda;
+  font-size: 0.8rem;
+  font-weight: bold;
+  font-family: 'Share Tech Mono', monospace;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Панель информации */
+.info-panel {
+  grid-area: info;
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 12px;
+  padding: 1.2rem;
+  border: 1px solid rgba(26, 111, 196, 0.3);
+}
+
+.info-panel h4 {
+  color: #64ffda;
+  margin-bottom: 0.8rem;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.1rem;
+}
+
+.info-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  background: rgba(10, 25, 47, 0.5);
+  border-radius: 8px;
+  padding: 0.8rem;
+  border-left: 3px solid #64ffda;
+}
+
+.info-item h5 {
+  color: #64ffda;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-family: 'Exo 2', sans-serif;
+}
+
+.info-item p {
+  color: #e6f1ff;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Предупреждение о отклонении */
+.deviation-warning {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #ff6b6b 0%, #c41a1a 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: pulse-warning 2s infinite;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.warning-text {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: bold;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Адаптивные стили */
+@media (max-width: 1200px) {
+  .simulator-layout {
+    grid-template-columns: 1fr 300px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .simulator-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: 
+      "map"
+      "receiver"
+      "cdi"
+      "info";
+  }
+  
+  .map-container {
+    min-height: 350px;
+  }
+  
+  .receiver-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .vor-simulator {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .simulator-layout {
+    gap: 1rem;
+  }
+  
+  .map-container {
+    min-height: 300px;
+  }
+  
+  .receiver-container {
+    flex-direction: column;
+  }
+  
+  .cdi-panel {
+    padding: 1rem;
+  }
+  
+  .info-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-container {
+    min-height: 250px;
+  }
+  
+  .cdi-panel {
+    padding: 0.8rem;
+  }
+  
+  .simulator-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .simulator-description {
+    font-size: 0.9rem;
+  }
+}

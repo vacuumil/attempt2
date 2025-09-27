@@ -1,0 +1,46 @@
+{
+  "UWLL": {
+    "SID": [
+      {
+        "id": "SID01",
+        "name": "BARATAV1D",
+        "description": "Схема вылета через точку BARAT",
+        "points": [
+          { "id": "BARAT", "lat": 54.3000, "lon": 48.2500, "name": "BARAT" },
+          { "id": "TRANS1", "lat": 54.3500, "lon": 48.3000, "name": "Transition" }
+        ]
+      },
+      {
+        "id": "SID02",
+        "name": "ULV1A",
+        "description": "Схема вылета через точку ULV",
+        "points": [
+          { "id": "ULV", "lat": 54.3200, "lon": 48.2800, "name": "ULV" },
+          { "id": "TRANS2", "lat": 54.3800, "lon": 48.3500, "name": "Transition" }
+        ]
+      }
+    ]
+  },
+  "UWWW": {
+    "STAR": [
+      {
+        "id": "STAR01", 
+        "name": "KURUM1A",
+        "description": "Схема захода через точку KURUM",
+        "points": [
+          { "id": "KURUM", "lat": 53.6000, "lon": 50.2000, "name": "KURUM" },
+          { "id": "TRANS3", "lat": 53.5500, "lon": 50.1800, "name": "Transition" }
+        ]
+      },
+      {
+        "id": "STAR02", 
+        "name": "SAM1B",
+        "description": "Схема захода через точку SAM",
+        "points": [
+          { "id": "SAM", "lat": 53.6500, "lon": 50.1500, "name": "SAM" },
+          { "id": "TRANS4", "lat": 53.5800, "lon": 50.1600, "name": "Transition" }
+        ]
+      }
+    ]
+  }
+}
