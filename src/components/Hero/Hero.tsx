@@ -32,7 +32,7 @@ export const Hero: React.FC = () => {
         </Subtitle>
         
         <CTAButtons>
-          <StyledPrimaryButton onClick={() => window.location.href = '../navigation'}>
+          <StyledPrimaryButton onClick={() => window.location.href = '../../pages/Navigation/Navigation.tsx'}>
             🚀 Начать обучение
           </StyledPrimaryButton>
           <StyledSecondaryButton onClick={handleLearnMore}>
