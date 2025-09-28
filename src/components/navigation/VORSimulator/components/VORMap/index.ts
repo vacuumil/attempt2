@@ -1,1 +1,0 @@
-export { VORMap } from './VORMap';
