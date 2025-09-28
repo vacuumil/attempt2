@@ -1,5 +1,6 @@
 // src/pages/Home/Home.tsx
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useInView } from 'framer-motion';
 import { Hero } from '../../components/Hero/Hero';
 import { Features } from '../../components/Features/Features';
@@ -27,16 +28,19 @@ import {
 } from './Home.styles';
 
 export const Home: React.FC = () => {
+  const navigate = useNavigate();
   const statsRef = useRef(null);
   useInView(statsRef, { once: true });
   const [hoveredDemo, setHoveredDemo] = useState<string | null>(null);
 
-  const handleDemoClick = (demo: string) => {
-    alert(`Демо-модуль "${demo}" будет доступен в ближайшем обновлении!`);
+  // Убрал неиспользуемую функцию handleNavigationClick
+
+  const handleDemoClick = (path: string) => {
+    navigate(path);
   };
 
   const handleTryNavigation = () => {
-    alert('Модуль навигации находится в активной разработке. Ожидайте запуск в ближайшее время!');
+    navigate('/navigation');
   };
 
   return (
@@ -94,7 +98,7 @@ export const Home: React.FC = () => {
             <InteractiveCompass />
 
             <DemoCard 
-              onClick={() => handleDemoClick('VOR Симулятор')}
+              onClick={() => handleDemoClick('/navigation?tab=vor')}
               onMouseEnter={() => setHoveredDemo('vor')}
               onMouseLeave={() => setHoveredDemo(null)}
               style={{
@@ -109,7 +113,7 @@ export const Home: React.FC = () => {
             </DemoCard>
             
             <DemoCard 
-              onClick={() => handleDemoClick('Анализ METAR')}
+              onClick={() => handleDemoClick('/meteorology')}
               onMouseEnter={() => setHoveredDemo('metar')}
               onMouseLeave={() => setHoveredDemo(null)}
               style={{
@@ -126,18 +130,17 @@ export const Home: React.FC = () => {
         </DemoContainer>
       </InteractiveSection>
 
-      {/* секция с игрой Alpha Bravo Challenge */}
       <ChallengeSection>
         <ChallengeContainer>
           <DemoTitle>Alpha Bravo Challenge</DemoTitle>
-          <p style={{ marginBottom: '2rem', fontSize: '1.1rem', opacity: 0.9 }}>
+          <p style={{ marginBottom: '1rem', fontSize: '1.1rem', opacity: 0.9 }}>
             Проверьте свои знания авиационного алфавита ИКАО в увлекательной игре
           </p>
           <AlphaBravoChallenge />
         </ChallengeContainer>
       </ChallengeSection>
 
-      <CtaSection>
+      <CtaSection style={{ marginBottom: '0.5rem' }}>
         <CtaContent>
           <CtaTitle>Готовы начать обучение?</CtaTitle>
           <CtaDescription>

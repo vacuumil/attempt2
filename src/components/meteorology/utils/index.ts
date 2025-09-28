@@ -5,10 +5,21 @@ export {
   getWeatherConditionText, 
   getAirportName,
   convertPressureToHpa,
-  convertPressureToInHg
+  convertPressureToInHg,
+  getModifiersDescription,
+  getRunwayDepositType,
+  getRunwayCoverage,
+  getRunwayDepth,
+  getRunwayFriction,
+  decodeRemark,
+  getVariableWindText
 } from './metarParser';
-export type { ParsedMetar } from './metarParser';
-
+export type { 
+  ParsedMetar, 
+  MetarModifiers,
+  MetarTrend,
+  TrendForecast
+} from './metarParser';
 export { 
   parseTaf, 
   fetchTafData 

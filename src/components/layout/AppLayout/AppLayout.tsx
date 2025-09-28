@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Header } from '../Header';
+import { Footer } from '../../Footer';
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -23,22 +24,18 @@ const MainContent = styled.main`
   }
 `;
 
-
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-
   return (
     <LayoutContainer>
       <Header />
-      
-      
-      
       <MainContent>
         {children}
       </MainContent>
+      <Footer />
     </LayoutContainer>
   );
 };

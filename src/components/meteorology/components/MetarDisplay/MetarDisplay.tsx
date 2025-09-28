@@ -1,6 +1,12 @@
 // src/components/meteorology/components/MetarDisplay/MetarDisplay.tsx
 import React, { useState } from 'react';
-import { getCloudCoverageText, getWeatherConditionText, getAirportName, convertPressureToHpa } from '../../utils';
+import { 
+  getCloudCoverageText, 
+  getWeatherConditionText, 
+  getAirportName, 
+  convertPressureToHpa,
+  getModifiersDescription 
+} from '../../utils';
 import type { ParsedMetar } from '../../utils';
 import {
   MetarContainer,
@@ -36,6 +42,10 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
   };
 
   const decodeWind = (wind: ParsedMetar['wind']): string => {
+    if (wind.isCalm) {
+      return 'Штиль';
+    }
+
     if (wind.direction === null) {
       return `Переменный ветер ${wind.speed} ${wind.unit.toLowerCase()}`;
     }
@@ -92,6 +102,9 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
 
   const formatVisibilityCode = (visibility: ParsedMetar['visibility']): string => {
     if (visibility.isCavok) return 'CAVOK';
+    if (visibility.unit === 'SM') {
+      return `${visibility.value}SM`; // Просто возвращаем значение + SM
+    }
     return visibility.value === 10000 ? '9999' : visibility.value.toString();
   };
 
@@ -99,10 +112,26 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
     if (visibility.isCavok) {
       return 'Видимость ≥10 км, нет облаков ниже 5000 ft, нет опасных явлений';
     }
+    
+    if (visibility.unit === 'SM') {
+      // Видимость в статутных милях - используем оригинальное значение
+      let prefix = '';
+      if (visibility.isLessThan) prefix = 'Менее ';
+      if (visibility.isGreaterThan) prefix = 'Более ';
+      
+      const meters = visibility.metersValue || Math.round(visibility.value * 1609.34);
+      return `${prefix}${visibility.value} статутных миль (≈${meters} м)`;
+    }
+    
     if (visibility.value >= 10000) {
       return 'Видимость ≥10 км';
     }
-    return `Видимость ${visibility.value} метров`;
+    
+    let prefix = '';
+    if (visibility.isLessThan) prefix = 'Менее ';
+    if (visibility.isGreaterThan) prefix = 'Более ';
+    
+    return `${prefix}${visibility.value} метров`;
   };
 
   const getRemarkTypeColor = (type: string): string => {
@@ -165,6 +194,31 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
             <DecodingCell>{formatTime(metarData.observationTime)}</DecodingCell>
           </TableRow>
 
+          {/* Секция модификаторов - показываем только если есть активные модификаторы */}
+          {(metarData.modifiers.isAuto || 
+            metarData.modifiers.isCorrected || 
+            metarData.modifiers.isAmended || 
+            metarData.modifiers.isMissing) && (
+            <TableRow>
+              <ParameterCell>Модификаторы</ParameterCell>
+              <ParameterCell>
+                <code>
+                  {metarData.modifiers.isAuto && 'AUTO '}
+                  {metarData.modifiers.isCorrected && 'COR '}
+                  {metarData.modifiers.isAmended && 'AMD '}
+                  {metarData.modifiers.isMissing && 'NIL'}
+                </code>
+              </ParameterCell>
+              <DecodingCell>
+                {getModifiersDescription(metarData.modifiers).map((desc: string, idx: number) => (
+                  <div key={idx} style={{ color: '#ffd700', marginBottom: '5px' }}>
+                    {desc}
+                  </div>
+                ))}
+              </DecodingCell>
+            </TableRow>
+          )}
+
           <TableRow>
             <ParameterCell>Ветер</ParameterCell>
             <ParameterCell>
@@ -189,6 +243,11 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
             <ParameterCell>Видимость</ParameterCell>
             <ParameterCell>
               <code>{formatVisibilityCode(metarData.visibility)}</code>
+              {metarData.visibility.unit === 'SM' && (
+                <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '5px' }}>
+                  в статутных милях
+                </div>
+              )}
             </ParameterCell>
             <DecodingCell>
               {formatVisibilityText(metarData.visibility)}
@@ -218,6 +277,7 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
                 </ParameterCell>
                 <DecodingCell>
                   {getCloudCoverageText(cloud.coverage)} с нижней границей {cloud.altitude} ft
+                  {cloud.isVerticalVisibility && ' (вертикальная видимость)'}
                 </DecodingCell>
               </TableRow>
             ))
@@ -301,6 +361,23 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
                 </DecodingCell>
               </TableRow>
             ))
+          )}
+
+          {/* Секция трендов - показываем только если есть тренды */}
+          {metarData.trends && metarData.trends.length > 0 && (
+            <TableRow>
+              <ParameterCell>Тренды</ParameterCell>
+              <ParameterCell>
+                <code>{metarData.trends.map(t => t.type).join(' ')}</code>
+              </ParameterCell>
+              <DecodingCell>
+                {metarData.trends.map((trend, idx: number) => (
+                  <div key={idx} style={{ marginBottom: '5px' }}>
+                    <strong>{trend.type}:</strong> {trend.forecast?.description || 'Изменение погодных условий'}
+                  </div>
+                ))}
+              </DecodingCell>
+            </TableRow>
           )}
         </tbody>
       </DecodingTable>

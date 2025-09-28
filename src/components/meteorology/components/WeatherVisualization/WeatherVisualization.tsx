@@ -30,10 +30,50 @@ export const WeatherVisualization: React.FC<WeatherVisualizationProps> = ({ meta
     return '☀️';
   };
 
-  const getVisibilityColor = (visibility: number) => {
-    if (visibility >= 5000) return '#64ffda';
-    if (visibility >= 2000) return '#ffd700';
+  const getVisibilityColor = (visibility: ParsedMetar['visibility']) => {
+    const visibilityValue = visibility.unit === 'SM' ? 
+      (visibility.metersValue || visibility.value * 1609.34) : 
+      visibility.value;
+    
+    if (visibilityValue >= 5000) return '#64ffda';
+    if (visibilityValue >= 2000) return '#ffd700';
     return '#ff6b6b';
+  };
+
+  const formatVisibility = (visibility: ParsedMetar['visibility']): string => {
+    if (visibility.isCavok) return '≥10 km';
+    
+    if (visibility.unit === 'SM') {
+      return `${visibility.value} SM`;
+    }
+    
+    if (visibility.value >= 10000) return '≥10 km';
+    return `${visibility.value} m`;
+  };
+
+  const formatPressure = (pressure: ParsedMetar['pressure']): string => {
+    if (pressure.isInHg) {
+      return `${pressure.value.toFixed(2)} inHg`;
+    } else {
+      return `${pressure.value} hPa`;
+    }
+  };
+
+  const formatWind = (wind: ParsedMetar['wind']): string => {
+    if (wind.isCalm) return 'Штиль';
+    
+    let windText = '';
+    if (wind.direction === null) {
+      windText = `VRB ${wind.speed} ${wind.unit}`;
+    } else {
+      windText = `${wind.direction}° / ${wind.speed} ${wind.unit}`;
+    }
+    
+    if (wind.gust) {
+      windText += ` G${wind.gust}`;
+    }
+    
+    return windText;
   };
 
   // Функция для расчета позиции облачного слоя
@@ -61,17 +101,15 @@ export const WeatherVisualization: React.FC<WeatherVisualizationProps> = ({ meta
                 title={`Направление: ${metarData.wind.direction || 'VRB'}°`}
               />
               <span>
-                {metarData.wind.direction ? `${metarData.wind.direction}°` : 'VRB'} / {metarData.wind.speed} {metarData.wind.unit}
-                {metarData.wind.gust && ` (порывы ${metarData.wind.gust})`}
+                {formatWind(metarData.wind)}
               </span>
             </WindDirection>
           </ValueDisplay>
 
           <ValueDisplay>
             <ValueLabel>Видимость</ValueLabel>
-            <span style={{ color: getVisibilityColor(metarData.visibility.value) }}>
-              {metarData.visibility.isCavok ? '≥10 km' : 
-               metarData.visibility.value >= 10000 ? '≥10 km' : `${metarData.visibility.value} m`}
+            <span style={{ color: getVisibilityColor(metarData.visibility) }}>
+              {formatVisibility(metarData.visibility)}
             </span>
           </ValueDisplay>
 
@@ -83,8 +121,7 @@ export const WeatherVisualization: React.FC<WeatherVisualizationProps> = ({ meta
           <ValueDisplay>
             <ValueLabel>Давление</ValueLabel>
             <span>
-              {metarData.pressure.unit}{metarData.pressure.value} 
-              {metarData.pressure.isInHg ? ' дюймов рт.ст.' : ' гПа'}
+              {formatPressure(metarData.pressure)}
             </span>
           </ValueDisplay>
         </WeatherGrid>

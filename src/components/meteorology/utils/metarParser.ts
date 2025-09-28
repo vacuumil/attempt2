@@ -48,9 +48,11 @@ type RemarkDetailsUnion =
   | RunwayDepthDetails
   | RemarkDetails;
 
+// Обновим интерфейс ParsedMetar
 export interface ParsedMetar {
   icaoCode: string;
   observationTime: string;
+  modifiers: MetarModifiers;
   wind: {
     direction: number | null;
     speed: number;
@@ -58,17 +60,22 @@ export interface ParsedMetar {
     unit: string;
     variableFrom?: number;
     variableTo?: number;
+    isCalm: boolean;
   };
   visibility: {
     value: number;
     unit: string;
     isCavok: boolean;
+    isGreaterThan?: boolean;
+    isLessThan?: boolean;
+    metersValue?: number;
   };
   weatherConditions: string[];
   clouds: Array<{
     coverage: string;
     altitude: number;
     type?: string;
+    isVerticalVisibility?: boolean;
   }>;
   temperature: {
     value: number;
@@ -87,6 +94,7 @@ export interface ParsedMetar {
     depth?: string;
     friction?: string;
   }>;
+  trends?: MetarTrend[];
   remarks: Array<{
     code: string;
     description: string;
@@ -368,6 +376,23 @@ const getGeneralRemarkDescription = (remark: string): string => {
   return remark;
 };
 
+export interface MetarModifiers {
+  isAuto: boolean;
+  isCorrected: boolean;
+  isAmended: boolean;
+  isMissing: boolean;
+}
+
+export interface TrendForecast {
+  description: string;
+}
+
+export interface MetarTrend {
+  type: 'BECMG' | 'TEMPO' | 'NOSIG';
+  validity?: string;
+  forecast: TrendForecast;
+}
+
 /**
  * Парсит строку METAR в структурированный объект
  */
@@ -384,7 +409,13 @@ export const parseMetar = (metarString: string): ParsedMetar => {
   const parsed: ParsedMetar = {
     icaoCode: '',
     observationTime: '',
-    wind: { direction: null, speed: 0, gust: null, unit: 'KT' },
+    modifiers: {
+      isAuto: false,
+      isCorrected: false,
+      isAmended: false,
+      isMissing: false
+    },
+    wind: { direction: null, speed: 0, gust: null, unit: 'KT', isCalm: false },
     visibility: { value: 9999, unit: 'm', isCavok: false },
     weatherConditions: [],
     clouds: [],
@@ -397,7 +428,9 @@ export const parseMetar = (metarString: string): ParsedMetar => {
 
   let index = 0;
   let inRemarks = false;
+  let inTrends = false;
   const remarksParts: string[] = [];
+  const trendParts: string[] = [];
 
   // 1. Поиск кода аэропорта
   if (parts.length > 0 && /^[A-Z]{4}$/.test(parts[0])) {
@@ -420,13 +453,38 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     index++;
   }
 
-  // 3. Пропускаем AUTO или COR если присутствуют
-  if (index < parts.length && (parts[index] === 'AUTO' || parts[index] === 'COR')) {
-    index++;
+  // 3. Обработка модификаторов
+  while (index < parts.length) {
+    const part = parts[index];
+    
+    if (part === 'AUTO') {
+      parsed.modifiers.isAuto = true;
+      index++;
+    } else if (part === 'COR') {
+      parsed.modifiers.isCorrected = true;
+      index++;
+    } else if (part === 'AMD') {
+      parsed.modifiers.isAmended = true;
+      index++;
+    } else if (part === 'NIL' || part === '/////') {
+      parsed.modifiers.isMissing = true;
+      index++;
+      // Если METAR отсутствует, возвращаем базовую структуру
+      if (parsed.modifiers.isMissing) {
+        return parsed;
+      }
+    } else if (part === 'RMK') {
+      inRemarks = true;
+      index++;
+      break;
+    } else {
+      // Если это не модификатор, переходим к следующей секции
+      break;
+    }
   }
 
-  // 4. Ветер - ПЕРЕРАБОТАННАЯ ЛОГИКА
-  if (index < parts.length) {
+  // 4. Ветер - улучшенная обработка
+  if (index < parts.length && !inRemarks) {
     const windPart = parts[index];
     
     // Штиль
@@ -435,16 +493,17 @@ export const parseMetar = (metarString: string): ParsedMetar => {
       parsed.wind.speed = 0;
       parsed.wind.gust = null;
       parsed.wind.unit = windPart.includes('MPS') ? 'MPS' : 'KT';
+      parsed.wind.isCalm = true;
       index++;
     }
     // Переменный ветер (VRB)
     else if (windPart.startsWith('VRB')) {
-      const vrbMatch = windPart.match(/^VRB(\d{1,2})G?(\d{1,3})?(KT|MPS|KMH)$/);
+      const vrbMatch = windPart.match(/^VRB(\d{1,2})(G(\d{1,3}))?(KT|MPS|KMH)$/);
       if (vrbMatch) {
         parsed.wind.direction = null;
         parsed.wind.speed = parseInt(vrbMatch[1]);
-        parsed.wind.gust = vrbMatch[2] ? parseInt(vrbMatch[2]) : null;
-        parsed.wind.unit = vrbMatch[3];
+        parsed.wind.gust = vrbMatch[3] ? parseInt(vrbMatch[3]) : null;
+        parsed.wind.unit = vrbMatch[4];
         index++;
       }
     }
@@ -483,64 +542,111 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     }
   }
 
-  // 5. Видимость
-  if (index < parts.length) {
+  // 5. Видимость - УЛУЧШЕННАЯ обработка для американских форматов
+  if (index < parts.length && !inRemarks) {
     const visPart = parts[index];
     
     if (visPart === 'CAVOK') {
       parsed.visibility.isCavok = true;
       parsed.visibility.value = 10000;
+      parsed.visibility.unit = 'm';
       index++;
     } else if (visPart === '9999') {
       parsed.visibility.value = 10000;
+      parsed.visibility.unit = 'm';
       index++;
-    } else if (/^\d{4}$/.test(visPart)) {
-      // Обычная видимость (например, 9000)
+    } 
+
+    // Видимость в статутных милях (например, 10SM)
+    else if (visPart.endsWith('SM')) {
+      const smMatch = visPart.match(/^(\d+)(?:\s*\/\s*\d+)?SM$/);
+      if (smMatch) {
+        const miles = parseInt(smMatch[1]);
+        console.log('🔍 Парсинг видимости SM:', { original: visPart, miles, meters: Math.round(miles * 1609.34) });
+        
+        // Сохраняем оригинальное значение в милях
+        parsed.visibility.value = miles;
+        parsed.visibility.unit = 'SM';
+        parsed.visibility.metersValue = Math.round(miles * 1609.34);
+        index++;
+      } else {
+        console.log('⚠️ Не удалось распарсить видимость SM:', visPart);
+        index++;
+      }
+    }
+
+    // Видимость в метрах (4 цифры)
+    else if (/^\d{4}$/.test(visPart)) {
       parsed.visibility.value = parseInt(visPart);
+      parsed.visibility.unit = 'm';
       index++;
-    } else if (visPart.startsWith('M') && /^M\d{4}$/.test(visPart)) {
-      // Видимость менее указанного значения (напр., M1000)
+    } 
+    // Видимость с префиксами M (меньше) или P (больше)
+    else if (visPart.startsWith('M') && /^M\d{4}$/.test(visPart)) {
       parsed.visibility.value = parseInt(visPart.slice(1));
-      remarksParts.push(`Видимость менее ${visPart.slice(1)} метров`);
+      parsed.visibility.unit = 'm';
+      parsed.visibility.isLessThan = true;
       index++;
-    } else if (/^\d{4}[NSEW]$/.test(visPart)) {
-      // Видимость с направлением (напр., 4000N)
+    } else if (visPart.startsWith('P') && /^P\d{4}$/.test(visPart)) {
+      parsed.visibility.value = parseInt(visPart.slice(1));
+      parsed.visibility.unit = 'm';
+      parsed.visibility.isGreaterThan = true;
+      index++;
+    } 
+    // Видимость с направлением
+    else if (/^\d{4}[NSEW]$/.test(visPart)) {
       parsed.visibility.value = parseInt(visPart.slice(0, 4));
-      remarksParts.push(`Видимость ${visPart.slice(4)}: ${parsed.visibility.value}m`);
+      parsed.visibility.unit = 'm';
+      index++;
+    } else if (visPart.includes('/')) {
+      // Дробная видимость в милях (например, 1 1/2SM)
+      // Пропускаем для упрощения, но можно обработать позже
+      index++;
+    } else {
+      // Если не распознали видимость, переходим дальше
       index++;
     }
   }
 
-  // 6. Погодные явления
+  // 6. Погодные явления - УЛУЧШЕННАЯ обработка
   const weatherCodes = ['RA', 'SN', 'FG', 'BR', 'HZ', 'TS', 'DZ', 'GR', 'GS', 'PL', 
                        'SG', 'IC', 'UP', 'SQ', 'FC', 'DS', 'SS', 'VA', 'PO', 'DU', 
-                       'SA', 'MI', 'BC', 'BL', 'DR', 'FZ', 'SH'];
+                       'SA', 'MI', 'BC', 'BL', 'DR', 'FZ', 'SH', 'VC'];
   
-  while (index < parts.length) {
+  while (index < parts.length && !inRemarks) {
     const part = parts[index];
     if (!part) break;
     
-    // Проверяем, не начались ли замечания
+    // Проверяем, не начались ли замечания или тренды
     if (part === 'RMK') {
       inRemarks = true;
       index++;
       continue;
     }
     
+    if (part === 'BECMG' || part === 'TEMPO' || part === 'NOSIG') {
+      inTrends = true;
+      break;
+    }
+    
     // Проверяем, не началась ли следующая секция
-    if (part.startsWith('R') && /^R\d{2}[LCR]?\//.test(part)) break; // ВПП
-    if ((part.startsWith('Q') || part.startsWith('A')) && part.length === 5) break; // Давление
-    if (part.includes('/') && part.length <= 7 && part.match(/^[M]?\d{2}\/[M]?\d{2}$/)) break; // Температура
+    // Облачность
+    if (part.match(/^(FEW|SCT|BKN|OVC|SKC|CLR|NSC|NCD|VV)\d{3}/)) break;
+    // Температура/давление
+    if (part.includes('/') && part.length <= 7 && part.match(/^[M]?\d{2}\/[M]?\d{2}$/)) break;
+    // Давление
+    if ((part.startsWith('Q') || part.startsWith('A')) && part.length === 5) break;
+    // Состояние ВПП
+    if (part.startsWith('R') && /^R\d{2}[LCR]?\//.test(part)) break;
     
-    // Проверяем на облачность
-    if (part.match(/^(FEW|SCT|BKN|OVC|SKC|CLR|NSC|NCD)\d{3}/)) break;
-    
+    // Проверяем на погодные явления
     const isWeatherCode = weatherCodes.some(code => 
       part.includes(code) || 
       part.startsWith('+') || 
       part.startsWith('-') ||
       part.startsWith('VC') ||
-      part === 'NSW'
+      part === 'NSW' ||
+      part === 'RE' // недавние погодные явления
     );
     
     if (isWeatherCode) {
@@ -552,10 +658,10 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     }
   }
 
-  // 7. Облачность
-  const cloudCoverages = ['FEW', 'SCT', 'BKN', 'OVC', 'SKC', 'CLR', 'NSC', 'NCD'];
+  // 7. Облачность - УЛУЧШЕННАЯ обработка
+  const cloudCoverages = ['FEW', 'SCT', 'BKN', 'OVC', 'SKC', 'CLR', 'NSC', 'NCD', 'VV'];
   
-  while (index < parts.length && !inRemarks) {
+  while (index < parts.length && !inRemarks && !inTrends) {
     const part = parts[index];
     if (!part) break;
     
@@ -565,19 +671,41 @@ export const parseMetar = (metarString: string): ParsedMetar => {
       break;
     }
     
+    if (part === 'BECMG' || part === 'TEMPO' || part === 'NOSIG') {
+      inTrends = true;
+      break;
+    }
+    
     // Проверяем на температуру/давление
-    if (part.includes('/') && part.length <= 7) break;
+    if (part.includes('/') && part.length <= 7 && part.match(/^[M]?\d{2}\/[M]?\d{2}$/)) break;
+    // Проверяем на давление
     if ((part.startsWith('Q') || part.startsWith('A')) && part.length === 5) break;
+    // Проверяем на состояние ВПП
     if (part.startsWith('R') && /^R\d{2}[LCR]?\//.test(part)) break;
     
+    // Обработка облачности
     if (cloudCoverages.some(coverage => part.startsWith(coverage))) {
       if (part === 'SKC' || part === 'CLR' || part === 'NSC' || part === 'NCD') {
-        // Ясно или нет значительной облачности
         parsed.clouds = [];
         index++;
         continue;
       }
       
+      // Вертикальная видимость
+      if (part.startsWith('VV')) {
+        const vvMatch = part.match(/^VV(\d{3})$/);
+        if (vvMatch) {
+          parsed.clouds.push({
+            coverage: 'VV',
+            altitude: parseInt(vvMatch[1]) * 100,
+            isVerticalVisibility: true
+          });
+        }
+        index++;
+        continue;
+      }
+      
+      // Обычная облачность
       const cloudMatch = part.match(/^(FEW|SCT|BKN|OVC)(\d{3})([A-Z]{2,3})?$/);
       if (cloudMatch) {
         parsed.clouds.push({
@@ -590,12 +718,13 @@ export const parseMetar = (metarString: string): ParsedMetar => {
         index++;
       }
     } else {
+      // Если это не облачность, переходим к следующей секции
       break;
     }
   }
 
   // 8. Температура/точка росы
-  if (index < parts.length && !inRemarks) {
+  if (index < parts.length && !inRemarks && !inTrends) {
     const tempPart = parts[index];
     
     if (tempPart && tempPart.includes('/')) {
@@ -611,12 +740,17 @@ export const parseMetar = (metarString: string): ParsedMetar => {
   }
 
   // 9. Давление QNH
-  for (let i = index; i < parts.length && !inRemarks; i++) {
+  for (let i = index; i < parts.length && !inRemarks && !inTrends; i++) {
     const part = parts[i];
     if (!part) continue;
     
     if (part === 'RMK') {
       inRemarks = true;
+      break;
+    }
+    
+    if (part === 'BECMG' || part === 'TEMPO' || part === 'NOSIG') {
+      inTrends = true;
       break;
     }
     
@@ -644,7 +778,7 @@ export const parseMetar = (metarString: string): ParsedMetar => {
   }
 
   // 10. Состояние полосы
-  for (let i = index; i < parts.length && !inRemarks; i++) {
+  for (let i = index; i < parts.length && !inRemarks && !inTrends; i++) {
     const part = parts[i];
     if (!part) continue;
     
@@ -653,24 +787,12 @@ export const parseMetar = (metarString: string): ParsedMetar => {
       break;
     }
     
-    // Проверяем специальный код CLRD (полоса чистая)
-    const clearedMatch = part.match(/^R(\d{2}[LCR]?)\/CLRD(\d{2})?$/);
-    if (clearedMatch) {
-      const runway = clearedMatch[1];
-      const frictionCode = clearedMatch[2];
-      
-      parsed.runwayConditions.push({
-        runway,
-        conditionCode: 'CLRD' + (frictionCode || ''),
-        depositType: 'Очищенная и сухая',
-        contamination: '0% покрытия',
-        depth: 'Нет осадков',
-        friction: frictionCode ? getRunwayFriction(frictionCode) : 'Отличное'
-      });
-      continue;
+    if (part === 'BECMG' || part === 'TEMPO' || part === 'NOSIG') {
+      inTrends = true;
+      break;
     }
     
-    // Стандартная обработка цифрового кода
+    // Обработка состояния ВПП
     const runwayMatch = part.match(/^R(\d{2}[LCR]?)\/([A-Z0-9/]{4,6})$/);
     if (runwayMatch) {
       const runway = runwayMatch[1];
@@ -709,7 +831,39 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     }
   }
 
-  // 11. Замечания (REMARKS)
+  // 11. Тренды (BECMG, TEMPO, NOSIG)
+  if (inTrends) {
+    parsed.trends = [];
+    
+    for (let i = index; i < parts.length; i++) {
+      const part = parts[i];
+      if (part === 'RMK') {
+        inRemarks = true;
+        break;
+      }
+      trendParts.push(part);
+    }
+    
+    // Базовая обработка трендов
+    if (trendParts.length > 0) {
+      const trendType = trendParts[0] as 'BECMG' | 'TEMPO' | 'NOSIG';
+      if (trendType === 'NOSIG') {
+        const trend: MetarTrend = {
+          type: trendType,
+          forecast: { description: 'Без значительных изменений' }
+        };
+        parsed.trends.push(trend);
+      } else if (trendType === 'BECMG' || trendType === 'TEMPO') {
+        const trend: MetarTrend = {
+          type: trendType,
+          forecast: { description: `Ожидается изменение условий (${trendType})` }
+        };
+        parsed.trends.push(trend);
+      }
+    }
+  }
+
+  // 12. Замечания (REMARKS) - УЛУЧШЕННАЯ обработка
   if (inRemarks) {
     for (let i = index; i < parts.length; i++) {
       const part = parts[i];
@@ -719,6 +873,7 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     }
   }
 
+  // Расширенная обработка примечаний
   parsed.remarks = parseRemarks(remarksParts);
 
   console.log('Результат парсинга:', parsed);
@@ -737,6 +892,18 @@ export const convertPressureToHpa = (inHg: number): number => {
  */
 export const convertPressureToInHg = (hpa: number): number => {
   return Math.round((hpa / 33.8639) * 100) / 100;
+};
+
+// Добавим функцию для получения текстового описания модификаторов
+export const getModifiersDescription = (modifiers: MetarModifiers): string[] => {
+  const descriptions: string[] = [];
+  
+  if (modifiers.isAuto) descriptions.push('Автоматическое наблюдение');
+  if (modifiers.isCorrected) descriptions.push('Корректированное');
+  if (modifiers.isAmended) descriptions.push('Измененное');
+  if (modifiers.isMissing) descriptions.push('Данные отсутствуют');
+  
+  return descriptions;
 };
 
 export const getCloudCoverageText = (coverage: string): string => {

@@ -1,6 +1,5 @@
 // components/Hero/Hero.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Добавьте этот импорт
 import {
   HeroContainer,
   HeroContent,
@@ -14,15 +13,9 @@ import {
 } from './Hero.styles';
 
 export const Hero: React.FC = () => {
-  const navigate = useNavigate(); // Добавьте этот хук
-
   const handleLearnMore = () => {
     const element = document.getElementById('features');
     element?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleStartLearning = () => {
-    navigate('/navigation'); // Перенаправление на страницу навигации
   };
 
   return (
@@ -39,7 +32,7 @@ export const Hero: React.FC = () => {
         </Subtitle>
         
         <CTAButtons>
-          <StyledPrimaryButton onClick={handleStartLearning}>
+          <StyledPrimaryButton onClick={() => window.location.href = '../navigation'}>
             🚀 Начать обучение
           </StyledPrimaryButton>
           <StyledSecondaryButton onClick={handleLearnMore}>

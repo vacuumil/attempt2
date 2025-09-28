@@ -1,11 +1,12 @@
 // src/components/meteorology/components/TafDisplay/TafDisplay.tsx
 import React, { useState, useMemo } from 'react';
-import type { ParsedTaf, TurbulenceInfo, IcingInfo } from '../../utils/tafParser';
+import type { ParsedTaf, TurbulenceInfo, IcingInfo, TemperatureInfo } from '../../utils/tafParser';
 import { 
   getWindDescription, 
   getVisibilityDescription, 
   getWeatherDescription, 
-  getCloudDescription 
+  getCloudDescriptionWithHazards,
+  getCbHazardsDescription
 } from '../../utils/tafParser';
 import {
   TafContainer,
@@ -75,44 +76,72 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
     try {
       const fromDay = parseInt(from.slice(0, 2));
       const fromHour = from.slice(2, 4);
-      const fromMinute = from.slice(4, 6);
+      const fromMinute = from.slice(4, 6) || '00';
       
       const toDay = parseInt(to.slice(0, 2));
       const toHour = to.slice(2, 4);
-      const toMinute = to.slice(4, 6);
+      const toMinute = to.slice(4, 6) || '00';
       
       // Если дни разные, показываем оба дня
       if (fromDay !== toDay) {
-        return `${fromDay}.${fromHour}:${fromMinute} - ${toDay}.${toHour}:${toMinute} UTC`;
+        return `${fromDay}.${fromHour}:${fromMinute} - ${toDay}.${toHour}:${toMinute}Z`;
       }
       
-      return `${fromHour}:${fromMinute} - ${toHour}:${toMinute} UTC`;
-    } catch  {
-      return 'Ошибка формата времени';
+      return `${fromHour}:${fromMinute} - ${toHour}:${toMinute}Z`;
+    } catch (error) {
+      console.warn('Ошибка формата периода:', from, to, error);
+      return 'Ошибка формата периода';
     }
+  };
+
+  // Вспомогательная функция для названий месяцев
+  const getMonthName = (month: number): string => {
+    const months = [
+      'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
+      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+    ];
+    return months[month - 1] || '';
   };
 
   const formatDate = (timeString: string): string => {
     if (!timeString || timeString.length < 4) return 'Время не указано';
     
     try {
-      // Для времени выпуска (DDHHMM)
-      if (timeString.length === 6) {
-        const day = parseInt(timeString.slice(0, 2));
+      // Для времени выпуска (DDHHMMZ) - 6 или 7 символов
+      if (timeString.length >= 6) {
+        const day = timeString.slice(0, 2);
         const hour = timeString.slice(2, 4);
-        const minute = timeString.slice(4, 6);
-        return `${day} числа, ${hour}:${minute}`;
+        const minute = timeString.length >= 6 ? timeString.slice(4, 6) : '00';
+        
+        // Определяем месяц и год
+        const now = new Date();
+        const currentYear = now.getUTCFullYear();
+        const currentMonth = now.getUTCMonth() + 1;
+        
+        const dayNum = parseInt(day);
+        let month = currentMonth;
+        let year = currentYear;
+        
+        // Если день меньше текущего, предполагаем следующий месяц
+        const currentDay = now.getUTCDate();
+        if (dayNum < currentDay) {
+          month = currentMonth === 12 ? 1 : currentMonth + 1;
+          year = currentMonth === 12 ? currentYear + 1 : currentYear;
+        }
+        
+        return `${dayNum} ${getMonthName(month)} ${year}, ${hour}:${minute}Z`;
       }
       
-      // Для периодов (HHMM)
+      // Для периодов (HHMM) - 4 символа
       if (timeString.length === 4) {
         const hour = timeString.slice(0, 2);
         const minute = timeString.slice(2, 4);
-        return `${hour}:${minute}`;
+        return `${hour}:${minute}Z`;
       }
       
-      return timeString; // fallback
-    } catch {
+      return timeString;
+    } catch (error) {
+      console.warn('Ошибка формата времени:', timeString, error);
       return 'Ошибка формата времени';
     }
   };
@@ -218,9 +247,14 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
   };
 
   const getCeilingInfo = (clouds: ParsedTaf['forecast'][0]['clouds']) => {
-    if (!clouds || clouds.length === 0) return 'Потолок: нет';
+    if (!clouds || clouds.length === 0) return 'Нижняя граница: нет';
     const ceiling = clouds.find(cloud => cloud.isCeiling);
-    return ceiling ? `Потолок: ${ceiling.altitude} ft` : 'Потолок: нет';
+    return ceiling ? `Нижняя граница: ${ceiling.altitude} ft` : 'Нижняя граница: нет';
+  };
+
+  const getTemperatureDescription = (temp: TemperatureInfo): string => {
+    const typeText = temp.type === 'max' ? 'Максимальная' : 'Минимальная';
+    return `${typeText}: ${temp.value > 0 ? '+' : ''}${temp.value}°C в ${formatDate(temp.time)}`;
   };
 
   // Получаем общую информацию о TAF с защитой от undefined
@@ -231,7 +265,7 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
         hasSignificantWeather: false,
         mainWind: undefined,
         mainVisibility: undefined,
-        ceiling: 'Потолок: нет данных'
+        ceiling: 'Нижняя граница: нет данных'
       };
     }
 
@@ -257,8 +291,12 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
           📅 Авиационный прогноз (TAF) - {icaoCode}
         </h3>
         <div style={{ color: '#8892b0', lineHeight: '1.6' }}>
-          <div><strong>Выпущен:</strong> {formatDate(tafData.issuanceTime)}</div>
-          <div><strong>Действителен:</strong> {formatDate(tafData.validity.from)} - {formatDate(tafData.validity.to)} UTC</div>
+          <div>
+            <strong>Выпущен:</strong> {tafData.issuanceTime ? formatDate(tafData.issuanceTime) : 'Не указано'}
+          </div>
+          <div>
+            <strong>Действителен:</strong> {formatDate(tafData.validity.from)} - {formatDate(tafData.validity.to)}
+          </div>
           {activePeriodIndex !== -1 && (
             <div style={{ color: '#64ffda', marginTop: '5px' }}>
               ✅ <strong>Активный период:</strong> {activePeriodIndex + 1}-й из {tafData.forecast.length}
@@ -267,13 +305,59 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
         </div>
       </div>
 
+      {/* Исходные данные */}
+      <div style={{ marginTop: '25px' }}>
+
+        {/* Исходные данные TAF */}
+        <div style={{ 
+          padding: '15px',
+          background: 'rgba(10, 25, 47, 0.5)',
+          borderRadius: '8px',
+          border: '1px solid #64ffda'
+        }}>
+          <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📋 Исходный TAF:</h4>
+          <code style={{ 
+            display: 'block',
+            padding: '10px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            color: '#e6f1ff',
+            fontFamily: 'Share Tech Mono, monospace',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all'
+          }}>
+            {tafData.raw}
+          </code>
+        </div>
+      </div>
+
+      {/* Температура */}
+      {tafData.temperature && tafData.temperature.length > 0 && (
+        <div style={{ 
+          background: 'rgba(255, 107, 107, 0.1)',
+          border: '1px solid #ff6b6b',
+          borderRadius: '8px',
+          padding: '10px',
+          marginTop: '10px'
+        }}>
+          <strong>🌡️ Температура:</strong>
+          {tafData.temperature.map((temp, idx) => (
+            <div key={idx} style={{ marginLeft: '10px', fontSize: '0.9rem' }}>
+              {getTemperatureDescription(temp)}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Краткий обзор условий */}
       <div style={{ 
         background: 'rgba(26, 111, 196, 0.1)',
         border: '1px solid #1a6fc4',
         borderRadius: '8px',
         padding: '15px',
-        marginBottom: '20px'
+        marginBottom: '20px',
+        marginTop: '20px',
       }}>
         <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📊 Краткий обзор:</h4>
         <div style={{ 
@@ -461,17 +545,39 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
                           gap: '10px'
                         }}>
                           <span style={{ 
-                            background: cloud.isCeiling ? 'rgba(255, 107, 107, 0.2)' : 'rgba(100, 255, 218, 0.2)',
+                            background: cloud.isCeiling ? 'rgba(255, 107, 107, 0.2)' : 
+                                      cloud.type === 'CB' ? 'rgba(255, 215, 0, 0.3)' :
+                                      'rgba(100, 255, 218, 0.2)',
                             padding: '4px 8px',
                             borderRadius: '4px',
                             fontSize: '0.8rem',
-                            fontWeight: cloud.isCeiling ? 'bold' : 'normal'
+                            fontWeight: cloud.isCeiling ? 'bold' : 'normal',
+                            border: cloud.type === 'CB' ? '1px solid #ffd700' : 'none'
                           }}>
-                            {cloud.coverage.toUpperCase()}
+                            {cloud.coverage.toUpperCase()}{cloud.type ? `/${cloud.type}` : ''}
                           </span>
-                          <span>{getCloudDescription(cloud)}</span>
+                          <span>{getCloudDescriptionWithHazards(cloud)}</span>
                         </div>
                       ))}
+                      
+                      {/* Показываем предупреждения для CB */}
+                      {getCbHazardsDescription(period.clouds).length > 0 && (
+                        <div style={{ 
+                          marginLeft: '10px',
+                          marginTop: '8px',
+                          padding: '8px',
+                          background: 'rgba(255, 215, 0, 0.1)',
+                          border: '1px solid #ffd700',
+                          borderRadius: '6px'
+                        }}>
+                          <strong style={{ color: '#ffd700' }}>⚠️ Опасные явления:</strong>
+                          {getCbHazardsDescription(period.clouds).map((hazard, idx) => (
+                            <div key={idx} style={{ fontSize: '0.8rem', marginTop: '2px' }}>
+                              • {hazard}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </TimelineItem>
                   ) : (
                     <TimelineItem>
@@ -501,63 +607,24 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
                       </div>
                     </TimelineItem>
                   )}
+
+                  {/* Температура периода */}
+                  {period.temperature && period.temperature.length > 0 && (
+                    <TimelineItem>
+                      <strong>🌡️ Температура:</strong>
+                      {period.temperature.map((temp, idx) => (
+                        <div key={idx} style={{ marginLeft: '10px', marginTop: '5px' }}>
+                          {getTemperatureDescription(temp)}
+                        </div>
+                      ))}
+                    </TimelineItem>
+                  )}
                 </WeatherTimeline>
               </ForecastGroup>
             )}
           </TafPeriod>
         );
       })}
-
-      {/* Легенда и исходные данные */}
-      <div style={{ marginTop: '25px' }}>
-        {/* Легенда */}
-        <div style={{ 
-          padding: '15px',
-          background: 'rgba(10, 25, 47, 0.3)',
-          borderRadius: '8px',
-          border: '1px solid #1a6fc4',
-          marginBottom: '15px'
-        }}>
-          <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📖 Условные обозначения:</h4>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '10px',
-            fontSize: '0.9rem',
-            color: '#8892b0'
-          }}>
-            <div>🔄 <strong>BECMG</strong> - Постепенное изменение</div>
-            <div>⏱️ <strong>TEMPO</strong> - Временные колебания</div>
-            <div>🎲 <strong>PROB</strong> - Вероятностный прогноз</div>
-            <div>🛬 <strong>FM</strong> - Резкое изменение</div>
-            <div>🔴 <strong>АКТИВНО</strong> - Текущие условия</div>
-            <div>⏳ <strong>БУДУЩЕЕ</strong> - Будущий период</div>
-          </div>
-        </div>
-
-        {/* Исходные данные TAF */}
-        <div style={{ 
-          padding: '15px',
-          background: 'rgba(10, 25, 47, 0.5)',
-          borderRadius: '8px',
-          border: '1px solid #64ffda'
-        }}>
-          <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📋 Исходный TAF:</h4>
-          <code style={{ 
-            display: 'block',
-            padding: '10px',
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            color: '#e6f1ff',
-            fontFamily: 'Share Tech Mono, monospace',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all'
-          }}>
-            {tafData.raw}
-          </code>
-        </div>
-      </div>
     </TafContainer>
   );
 };

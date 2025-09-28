@@ -42,6 +42,12 @@ export interface TafWeather {
   raw: string;
 }
 
+export interface TemperatureInfo {
+  type: 'max' | 'min';
+  value: number;
+  time: string;
+}
+
 export interface TafForecast {
   type: 'MAIN' | 'BECMG' | 'TEMPO' | 'PROB';
   validity: {
@@ -56,6 +62,7 @@ export interface TafForecast {
   clouds: TafCloud[];
   turbulence?: TurbulenceInfo;
   icing?: IcingInfo;
+  temperature?: TemperatureInfo[];
   raw: string;
 }
 
@@ -68,6 +75,7 @@ export interface ParsedTaf {
   };
   forecast: TafForecast[];
   remarks: string[];
+  temperature?: TemperatureInfo[];
   raw: string;
 }
 
@@ -96,6 +104,34 @@ export const normalizeTafTime = (timeString: string): string => {
 };
 
 /**
+ * Улучшенный парсер времени TAF с учетом всех форматов
+ */
+export const normalizeTafTimeAdvanced = (timeString: string, referenceDate?: Date): string => {
+  if (!timeString) return '010000';
+  
+  const now = referenceDate || new Date();
+  
+  // Убираем Z если есть
+  const cleanTime = timeString.replace('Z', '').trim();
+  
+  // Формат DDHHMM (6 цифр)
+  if (cleanTime.length === 6 && /^\d{6}$/.test(cleanTime)) {
+    return cleanTime;
+  }
+  
+  // Формат DDHHMM (6 цифр) с возможным переходом через месяц
+
+  
+  // Формат HHMM (4 цифры) - добавляем текущий день
+  if (cleanTime.length === 4 && /^\d{4}$/.test(cleanTime)) {
+    const day = now.getUTCDate().toString().padStart(2, '0');
+    return day + cleanTime;
+  }
+  
+  return '010000';
+};
+
+/**
  * Парсит время выпуска TAF
  */
 const parseIssuanceTime = (timeString: string): string => {
@@ -107,14 +143,74 @@ const parseIssuanceTime = (timeString: string): string => {
  */
 const parseValidityPeriod = (validityString: string): { from: string; to: string } => {
   if (!validityString || !validityString.includes('/')) {
-    return { from: '010000', to: '020000' };
+    const now = new Date();
+    const day = now.getUTCDate().toString().padStart(2, '0');
+    const hour = now.getUTCHours().toString().padStart(2, '0');
+    return { 
+      from: day + hour + '00', 
+      to: day + ((parseInt(hour) + 24) % 24).toString().padStart(2, '0') + '00' 
+    };
   }
   
   const [fromStr, toStr] = validityString.split('/');
   
+  // Обработка различных форматов времени
+  const fromTime = normalizeTafTime(fromStr);
+  let toTime = normalizeTafTime(toStr);
+  
+  // Корректировка для 24-часового формата (2400 -> 0000 следующего дня)
+  if (toTime.endsWith('2400') || toTime.endsWith('240000')) {
+    const toDay = parseInt(toTime.slice(0, 2));
+    const nextDay = (toDay % 31) + 1;
+    toTime = nextDay.toString().padStart(2, '0') + '0000';
+  }
+  
   return {
-    from: normalizeTafTime(fromStr),
-    to: normalizeTafTime(toStr)
+    from: fromTime,
+    to: toTime
+  };
+};
+
+/**
+ * Улучшенный парсер периода действия
+ */
+const parseValidityPeriodEnhanced = (validityString: string): { from: string; to: string } => {
+  if (!validityString || !validityString.includes('/')) {
+    const now = new Date();
+    const day = now.getUTCDate().toString().padStart(2, '0');
+    const hour = now.getUTCHours().toString().padStart(2, '0');
+    return { 
+      from: day + hour + '00', 
+      to: day + ((parseInt(hour) + 24) % 24).toString().padStart(2, '0') + '00' 
+    };
+  }
+  
+  const [fromStr, toStr] = validityString.split('/');
+  const now = new Date();
+  
+  // Обработка различных форматов времени
+  const fromTime = normalizeTafTimeAdvanced(fromStr, now);
+  let toTime = normalizeTafTimeAdvanced(toStr, now);
+  
+  // Корректировка для 24-часового формата и переходов через месяц
+  const fromDay = parseInt(fromTime.slice(0, 2));
+  let toDay = parseInt(toTime.slice(0, 2));
+  
+  // Если день прибытия меньше дня отправления, предполагаем следующий месяц
+  if (toDay < fromDay) {
+    toDay += 31; // Упрощенная логика для перехода через месяц
+    toTime = toDay.toString().padStart(2, '0') + toTime.slice(2);
+  }
+  
+  // Обработка 2400 -> 0000 следующего дня
+  if (toTime.endsWith('2400') || toTime.slice(2) === '2400') {
+    toDay = (parseInt(toTime.slice(0, 2)) % 31) + 1;
+    toTime = toDay.toString().padStart(2, '0') + '0000';
+  }
+  
+  return {
+    from: fromTime,
+    to: toTime
   };
 };
 
@@ -188,16 +284,22 @@ const decodeCloudCoverage = (code: string): TafCloud => {
 
   const cloud: TafCloud = {
     coverage: coverageMap[code.slice(0, 3)] || code.slice(0, 3),
-    altitude: parseInt(code.slice(3, 6)) * 100
+    altitude: parseInt(code.slice(3, 6)) * 100,
+    type: undefined,
+    isCeiling: false
   };
 
-  // Тип облаков (если есть)
-  if (code.length > 6) {
-    cloud.type = code.slice(6);
+  // Определяем тип облаков (CB, TCU)
+  if (code.includes('CB')) {
+    cloud.type = 'CB';
+    cloud.isCeiling = true;
+  } else if (code.includes('TCU')) {
+    cloud.type = 'TCU';
+    cloud.isCeiling = true;
+  } else {
+    // Определяем является ли это потолком
+    cloud.isCeiling = cloud.coverage === 'broken' || cloud.coverage === 'overcast';
   }
-
-  // Определяем является ли это потолком
-  cloud.isCeiling = cloud.coverage === 'broken' || cloud.coverage === 'overcast';
 
   return cloud;
 };
@@ -262,6 +364,42 @@ const getIcingIntensity = (code: string): string => {
     '4': 'severe'
   };
   return intensity[code] || 'unknown';
+};
+
+/**
+ * Парсинг температуры
+ */
+const parseTemperature = (code: string): TemperatureInfo | null => {
+  // TX10/1215Z - максимальная температура 10°C в 12:15Z
+  // TN02/0304Z - минимальная температура 2°C в 03:04Z
+  const txMatch = code.match(/^TX([M]?\d{2})\/(\d{4})Z$/);
+  const tnMatch = code.match(/^TN([M]?\d{2})\/(\d{4})Z$/);
+  
+  if (txMatch) {
+    let value = parseInt(txMatch[1].replace('M', '-'));
+    if (txMatch[1].startsWith('M')) {
+      value = -parseInt(txMatch[1].slice(1));
+    }
+    return {
+      type: 'max',
+      value: value,
+      time: txMatch[2] + '00'
+    };
+  }
+  
+  if (tnMatch) {
+    let value = parseInt(tnMatch[1].replace('M', '-'));
+    if (tnMatch[1].startsWith('M')) {
+      value = -parseInt(tnMatch[1].slice(1));
+    }
+    return {
+      type: 'min', 
+      value: value,
+      time: tnMatch[2] + '00'
+    };
+  }
+  
+  return null;
 };
 
 /**
@@ -515,6 +653,17 @@ export const parseTaf = (tafString: string): ParsedTaf => {
       continue;
     }
 
+    // Температура
+    const temperature = parseTemperature(part);
+    if (temperature) {
+      if (!currentForecast.temperature) {
+        currentForecast.temperature = [];
+      }
+      currentForecast.temperature.push(temperature);
+      index++;
+      continue;
+    }
+
     index++;
   }
 
@@ -589,7 +738,8 @@ const generateMockTaf = (icaoCode: string): string => {
   VRB03KT 9999 SCT030 
   BECMG ${day}${(parseInt(hour) + 6) % 24}00/${day}${(parseInt(hour) + 8) % 24}00 12010G20KT 
   TEMPO ${day}${(parseInt(hour) + 12) % 24}00/${day}${(parseInt(hour) + 16) % 24}00 4000 -RA BKN015 
-  PROB30 ${day}${(parseInt(hour) + 18) % 24}00/${day}${(parseInt(hour) + 22) % 24}00 2000 TSRA BKN008CB`;
+  PROB30 ${day}${(parseInt(hour) + 18) % 24}00/${day}${(parseInt(hour) + 22) % 24}00 2000 TSRA BKN008CB
+  TX15/1215Z TN05/0304Z`;
 
   return mockTaf.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 };
@@ -599,24 +749,52 @@ const generateMockTaf = (icaoCode: string): string => {
  */
 export const parseTafEnhanced = (tafString: string): ParsedTaf => {
   try {
-    // Пример: "TAF KDFW 272054Z 2721/2824 10006KT P6SM SCT250"
-    const enhancedTaf = tafString.replace(/(\d{6}Z) (\d{4}\/\d{4})/, '$1 $2');
+    console.log('🔄 Улучшенный парсинг TAF:', tafString);
     
-    const parsed = parseTaf(enhancedTaf);
+    // Нормализация различных форматов TAF
+    const normalizedTaf = tafString
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     
-    // Дополнительная обработка для специфических форматов
-    if (parsed.issuanceTime && parsed.issuanceTime.endsWith('54')) {
-      // Это наш пример - исправляем время
-      parsed.issuanceTime = '272054'; // 27 числа, 20:54
-      parsed.validity = {
-        from: '272100', // 27 числа, 21:00
-        to: '282400'    // 28 числа, 24:00
-      };
+    // Обработка TAF с временем выпуска в формате DDHHMMZ
+    const issuanceMatch = normalizedTaf.match(/(\d{6}Z)/);
+    if (issuanceMatch) {
+      console.log('📅 Найдено время выпуска:', issuanceMatch[1]);
     }
     
+    // Обработка периода действия
+    const validityMatch = normalizedTaf.match(/(\d{4}\/\d{4})/);
+    if (validityMatch) {
+      console.log('⏱️ Найден период действия:', validityMatch[1]);
+    }
+    
+    const parsed = parseTaf(normalizedTaf);
+    
+    // Дополнительная валидация и коррекция данных
+    if (parsed.issuanceTime && parsed.issuanceTime.length === 6) {
+      // Убедимся, что время выпуска корректно
+      console.log('✅ Время выпуска после парсинга:', parsed.issuanceTime);
+    }
+    
+    if (parsed.validity.from && parsed.validity.to) {
+      console.log('✅ Период действия после парсинга:', parsed.validity);
+    }
+    
+    // Проверка и коррекция для различных форматов TAF
+    parsed.forecast.forEach((period) => {
+      if (!period.validity.from || period.validity.from.length < 4) {
+        // Установка значений по умолчанию для некорректных периодов
+        const now = new Date();
+        const day = now.getUTCDate().toString().padStart(2, '0');
+        period.validity.from = day + '0000';
+        period.validity.to = day + '2359';
+      }
+    });
+    
     return parsed;
-  } catch {
-    console.warn('Enhanced parsing failed, using standard parser');
+  } catch (error) {
+    console.warn('⚠️ Улучшенный парсинг не сработал, используем стандартный:', error);
     return parseTaf(tafString);
   }
 };
@@ -646,9 +824,11 @@ export const normalizeTafData = (parsedTaf: ParsedTaf): ParsedTaf => {
       clouds: period.clouds || [],
       turbulence: period.turbulence,
       icing: period.icing,
+      temperature: period.temperature || [],
       raw: period.raw || ''
     })) || [],
     remarks: parsedTaf.remarks || [],
+    temperature: parsedTaf.temperature || [],
     raw: parsedTaf.raw || ''
   };
 
@@ -788,8 +968,332 @@ export const getCloudDescription = (cloud: TafCloud): string => {
   let description = `${coverageMap[cloud.coverage] || cloud.coverage} на ${cloud.altitude} ft`;
   
   if (cloud.isCeiling) {
-    description += ' (потолок)';
+    description += ' (Нижняя граница)';
   }
   
   return description;
+};
+
+/**
+ * Получить описание облаков с учетом CB
+ */
+export const getCloudDescriptionWithHazards = (cloud: TafCloud): string => {
+  const coverageMap: Record<string, string> = {
+    'few': 'Незначительная',
+    'scattered': 'Рассеянная',
+    'broken': 'Разорванная',
+    'overcast': 'Сплошная',
+    'vertical_visibility': 'Вертикальная видимость'
+  };
+
+  let description = `${coverageMap[cloud.coverage] || cloud.coverage} на ${cloud.altitude} ft`;
+  
+  if (cloud.type === 'CB') {
+    description += ' (Cumulonimbus - кучево-дождевые)';
+  } else if (cloud.type === 'TCU') {
+    description += ' (Towering Cumulus - мощно-кучевые)';
+  }
+  
+  if (cloud.isCeiling) {
+    description += ' - Нижняя граница';
+  }
+  
+  return description;
+};
+
+/**
+ * Получить предупреждения для CB облаков
+ */
+export const getCbHazardsDescription = (clouds: TafCloud[]): string[] => {
+  const hazards: string[] = [];
+  const hasCb = clouds.some(cloud => cloud.type === 'CB' || cloud.type === 'TCU');
+  
+  if (hasCb) {
+    hazards.push('⚡ Грозовая деятельность');
+    hazards.push('💨 Сильная турбулентность');
+    hazards.push('🧊 Интенсивное обледенение');
+    hazards.push('🌀 Сдвиг ветра');
+    hazards.push('🧊 Град');
+  }
+  
+  return hazards;
+};
+
+/**
+ * Универсальный парсер TAF для всех возможных ситуаций
+ */
+export const parseTafUniversal = (tafString: string): ParsedTaf => {
+  console.log('🔄 Универсальный парсинг TAF:', tafString);
+  
+  if (!tafString || tafString.trim().length === 0) {
+    throw new Error('Пустая строка TAF');
+  }
+
+  // Нормализация различных форматов TAF
+  const normalizedTaf = tafString
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const parts = normalizedTaf.split(' ');
+  const parsed: ParsedTaf = {
+    icaoCode: '',
+    issuanceTime: '',
+    validity: { from: '', to: '' },
+    forecast: [],
+    remarks: [],
+    raw: tafString
+  };
+
+  let index = 0;
+  let currentForecast: TafForecast | null = null;
+  let inRemarks = false;
+  const remarks: string[] = [];
+
+  // Парсинг заголовка TAF
+  if (index < parts.length && /^[A-Z]{4}$/.test(parts[index])) {
+    parsed.icaoCode = parts[index];
+    index++;
+  }
+
+  // Время выпуска
+  if (index < parts.length && (/\d{6}Z?/.test(parts[index]) || /\d{4}Z?/.test(parts[index]))) {
+    parsed.issuanceTime = normalizeTafTimeAdvanced(parts[index]);
+    index++;
+  }
+
+  // COR/AMD
+  if (index < parts.length && (parts[index] === 'COR' || parts[index] === 'AMD')) {
+    index++;
+  }
+
+  // Период действия
+  if (index < parts.length && /\d{4,6}\/\d{4,6}/.test(parts[index])) {
+    const validity = parseValidityPeriodEnhanced(parts[index]);
+    parsed.validity = validity;
+    index++;
+  }
+
+  // Основной цикл парсинга прогнозов
+  currentForecast = {
+    type: 'MAIN',
+    validity: { ...parsed.validity },
+    weather: [],
+    clouds: [],
+    raw: ''
+  };
+
+  while (index < parts.length) {
+    const part = parts[index];
+    if (!part) {
+      index++;
+      continue;
+    }
+
+    // Обработка примечаний
+    if (part === 'RMK' || part === 'REMARKS') {
+      inRemarks = true;
+      index++;
+      continue;
+    }
+
+    if (inRemarks) {
+      remarks.push(part);
+      index++;
+      continue;
+    }
+
+    // Проверяем на новый период прогноза
+    const changeTypes: ('BECMG' | 'TEMPO' | 'PROB' | 'FM')[] = ['BECMG', 'TEMPO', 'PROB', 'FM'];
+    const isChangeType = changeTypes.some(type => part.startsWith(type));
+
+    if (isChangeType && currentForecast) {
+      // Сохраняем текущий прогноз
+      if (currentForecast.weather.length > 0 || currentForecast.clouds.length > 0 || currentForecast.wind) {
+        parsed.forecast.push(currentForecast);
+      }
+
+      // Создаем новый прогноз
+      let type: TafForecast['type'] = 'MAIN';
+      let changeType: 'BECMG' | 'TEMPO' | 'PROB' | 'FM' | undefined;
+      let probability: number | undefined;
+
+      if (part.startsWith('PROB')) {
+        type = 'PROB';
+        const probMatch = part.match(/^PROB(\d{2})$/);
+        probability = probMatch ? parseInt(probMatch[1]) : 30;
+        changeType = 'PROB';
+      } else if (part === 'BECMG') {
+        type = 'BECMG';
+        changeType = 'BECMG';
+      } else if (part === 'TEMPO') {
+        type = 'TEMPO';
+        changeType = 'TEMPO';
+      } else if (part === 'FM') {
+        type = 'MAIN';
+        changeType = 'FM';
+      } else {
+        changeType = undefined;
+      }
+
+      currentForecast = {
+        type,
+        changeType,
+        probability,
+        validity: { from: '', to: '' },
+        weather: [],
+        clouds: [],
+        raw: ''
+      };
+
+      // Устанавливаем период действия
+      if (changeType === 'FM' && index + 1 < parts.length) {
+        const timePart = parts[index + 1];
+        if (/^\d{4}$/.test(timePart)) {
+          currentForecast.validity.from = timePart + '00';
+          currentForecast.validity.to = '999999';
+          index++;
+        }
+      } else if (index + 1 < parts.length && /\d{4}\/\d{4}/.test(parts[index + 1])) {
+        const periodParts = parts[index + 1].split('/');
+        currentForecast.validity.from = periodParts[0] + '00';
+        currentForecast.validity.to = periodParts[1] + '00';
+        index++;
+      }
+
+      index++;
+      continue;
+    }
+
+    if (!currentForecast) {
+      index++;
+      continue;
+    }
+
+    // Парсим ветер
+    if (/^\d{5}(G\d{1,3})?(KT|MPS|KMH)$/.test(part) || part.startsWith('VRB')) {
+      if (part.startsWith('VRB')) {
+        const vrbMatch = part.match(/^VRB(\d{1,2})(G(\d{1,3}))?(KT|MPS|KMH)$/);
+        if (vrbMatch) {
+          currentForecast.wind = {
+            direction: 'VRB',
+            speed: parseInt(vrbMatch[1]),
+            unit: vrbMatch[4]
+          };
+          if (vrbMatch[3]) {
+            currentForecast.wind.gust = parseInt(vrbMatch[3]);
+          }
+        }
+      } else {
+        const windMatch = part.match(/^(\d{3})(\d{2})(G(\d{1,3}))?(KT|MPS|KMH)$/);
+        if (windMatch) {
+          currentForecast.wind = {
+            direction: parseInt(windMatch[1]),
+            speed: parseInt(windMatch[2]),
+            unit: windMatch[5]
+          };
+          if (windMatch[4]) {
+            currentForecast.wind.gust = parseInt(windMatch[4]);
+          }
+        }
+      }
+      index++;
+      continue;
+    }
+
+    // Переменный ветер
+    if (/^\d{3}V\d{3}$/.test(part)) {
+      if (currentForecast.wind) {
+        const variableMatch = part.match(/^(\d{3})V(\d{3})$/);
+        if (variableMatch) {
+          currentForecast.wind.variableFrom = parseInt(variableMatch[1]);
+          currentForecast.wind.variableTo = parseInt(variableMatch[2]);
+        }
+      }
+      index++;
+      continue;
+    }
+
+    // Видимость
+    if (part === 'CAVOK' || part === '9999' || /^\d{4}$/.test(part) || /^[PM]\d{4}$/.test(part)) {
+      currentForecast.visibility = {
+        value: part === 'CAVOK' ? 10000 : 
+               part === '9999' ? 10000 :
+               part.startsWith('P') ? parseInt(part.slice(1)) :
+               part.startsWith('M') ? parseInt(part.slice(1)) : parseInt(part),
+        unit: 'm',
+        isCavok: part === 'CAVOK',
+        isGreaterThan: part.startsWith('P')
+      };
+      index++;
+      continue;
+    }
+
+    // Погодные явления
+    const weatherCodes = ['RA', 'SN', 'FG', 'BR', 'HZ', 'TS', 'DZ', 'GR', 'GS', 'PL', 'SG', 
+                         'IC', 'UP', 'SQ', 'FC', 'DS', 'SS', 'VA', 'PO', 'DU', 'SA', 'MI', 
+                         'BC', 'BL', 'DR', 'FZ', 'SH', 'VC'];
+    
+    if (weatherCodes.some(code => part.includes(code)) || 
+        part.startsWith('+') || part.startsWith('-') || part.startsWith('VC')) {
+      const weather = decodeWeather(part);
+      currentForecast.weather.push(weather);
+      index++;
+      continue;
+    }
+
+    // Облачность
+    const cloudCoverages = ['FEW', 'SCT', 'BKN', 'OVC', 'VV'];
+    if (cloudCoverages.some(coverage => part.startsWith(coverage)) && /^\D+\d+/.test(part)) {
+      const cloud = decodeCloudCoverage(part);
+      currentForecast.clouds.push(cloud);
+      index++;
+      continue;
+    }
+
+    // Нет значительной облачности
+    if (part === 'NSC' || part === 'SKC' || part === 'CLR') {
+      currentForecast.clouds = [];
+      index++;
+      continue;
+    }
+
+    // Турбулентность и обледенение (6xxxxx)
+    if (part.startsWith('6') && part.length === 6) {
+      const turbulence = decodeTurbulence(part);
+      if (turbulence) {
+        currentForecast.turbulence = turbulence;
+      } else {
+        const icing = decodeIcing(part);
+        if (icing) {
+          currentForecast.icing = icing;
+        }
+      }
+      index++;
+      continue;
+    }
+
+    // Температура
+    const temperature = parseTemperature(part);
+    if (temperature) {
+      if (!currentForecast.temperature) {
+        currentForecast.temperature = [];
+      }
+      currentForecast.temperature.push(temperature);
+      index++;
+      continue;
+    }
+
+    index++;
+  }
+
+  // Добавляем последний прогноз
+  if (currentForecast && (currentForecast.weather.length > 0 || currentForecast.clouds.length > 0 || currentForecast.wind)) {
+    parsed.forecast.push(currentForecast);
+  }
+
+  parsed.remarks = remarks;
+
+  console.log('Результат универсального парсинга TAF:', parsed);
+  return normalizeTafData(parsed);
 };

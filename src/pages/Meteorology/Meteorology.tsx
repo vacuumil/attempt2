@@ -60,27 +60,39 @@ const Meteorology: React.FC = () => {
       const rawTaf = await fetchTafData(code);
       console.log('📨 Получен сырой TAF:', rawTaf);
       
-      // Пробуем улучшенный парсер сначала
+      if (!rawTaf || rawTaf.includes('No TAF available') || rawTaf.length < 10) {
+        setTafError('TAF недоступен для этого аэропорта');
+        setTafData(null);
+        return;
+      }
+      
+      // Используем улучшенный парсер с обработкой ошибок
       let parsedTaf;
       try {
         parsedTaf = parseTafEnhanced(rawTaf);
-        console.log('✅ Успешный парсинг улучшенным парсером');
+        console.log('✅ Успешный парсинг улучшенным парсером:', parsedTaf);
+        
+        // Валидация распарсенных данных
+        if (!parsedTaf.issuanceTime || !parsedTaf.validity.from || !parsedTaf.validity.to) {
+          console.warn('⚠️ Неполные данные TAF, пробуем безопасный парсер');
+          parsedTaf = parseTafSafely(rawTaf);
+        }
       } catch (enhancedError) {
         console.warn('⚠️ Улучшенный парсер не сработал, пробуем безопасный:', enhancedError);
         parsedTaf = parseTafSafely(rawTaf);
       }
       
-      if (parsedTaf) {
+      if (parsedTaf && parsedTaf.forecast && parsedTaf.forecast.length > 0) {
         setTafData(parsedTaf);
         console.log('📊 TAF данные установлены:', parsedTaf);
       } else {
         setTafError('Не удалось распарсить данные TAF');
-        console.error('❌ Ошибка парсинга TAF');
+        console.error('❌ Ошибка парсинга TAF - нет данных прогноза');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка';
       setTafError(`Ошибка загрузки TAF: ${errorMessage}`);
-      console.warn('❌ Ошибка загрузки TAF:', err);
+      console.error('❌ Ошибка загрузки TAF:', err);
       setTafData(null);
     } finally {
       setLoadingTaf(false);
