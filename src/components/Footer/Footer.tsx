@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
     {
       title: 'Обучение',
       links: [
-        { label: 'VOR Навигация', path: '/navigation/vor/Vorpage' },
+        { label: 'VOR Навигация', path: '/navigation?tab=vor' },
         { label: 'ILS Подход', path: '/navigation?tab=ils' },
         { label: 'Треугольник скоростей', path: '/navigation?tab=triangle' },
         { label: 'Анализ METAR', path: '/meteorology' }
