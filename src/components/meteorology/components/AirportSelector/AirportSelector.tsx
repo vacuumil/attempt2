@@ -1,5 +1,5 @@
 // src/components/meteorology/components/AirportSelector/AirportSelector.tsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   SelectorContainer, 
   InputGroup, 
@@ -13,33 +13,7 @@ import {
   ModalButton
 } from './AirportSelector.styles';
 import { AirportModal } from '../AirportModal/AirportModal';
-
-// Расширенная база данных аэропортов
-const AIRPORT_DATABASE = [
-  { icao: 'UUEE', name: 'Шереметьево, Москва' },
-  { icao: 'UUDD', name: 'Домодедово, Москва' },
-  { icao: 'UUWW', name: 'Внуково, Москва' },
-  { icao: 'URSS', name: 'Сочи' },
-  { icao: 'URMM', name: 'Минеральные Воды' },
-  { icao: 'URKK', name: 'Краснодар' },
-  { icao: 'USSS', name: 'Екатеринбург' },
-  { icao: 'UWGG', name: 'Нижний Новгород' },
-  { icao: 'UWWW', name: 'Самара' },
-  { icao: 'UNNT', name: 'Толмачево, Новосибирск' },
-  { icao: 'ULLI', name: 'Пулково, Санкт-Петербург' },
-  { icao: 'UHWW', name: 'Владивосток' },
-  { icao: 'UHHH', name: 'Хабаровск' },
-  { icao: 'UWKS', name: 'Курган' },
-  { icao: 'UOOO', name: 'Новый Уренгой' },
-  { icao: 'KJFK', name: 'JFK, Нью-Йорк' },
-  { icao: 'KLAX', name: 'Лос-Анджелес' },
-  { icao: 'EGLL', name: 'Хитроу, Лондон' },
-  { icao: 'LFPG', name: 'Шарль де Голль, Париж' },
-  { icao: 'EDDF', name: 'Франкфурт' },
-  { icao: 'UAAA', name: 'Алматы, Казахстан' },
-  { icao: 'ZBAA', name: 'Пекин Столичный, Китай' },
-  { icao: 'RJTT', name: 'Токио Ханэда, Япония' },
-];
+import { searchAirports } from '../../utils/airportDatabase';
 
 interface AirportSelectorProps {
   icaoCode: string;
@@ -59,21 +33,13 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState(icaoCode);
-
-  // Синхронизация с внешним состоянием
-  useEffect(() => {
-    setInputValue(icaoCode);
-  }, [icaoCode]);
+  const [isInputActive, setIsInputActive] = useState(false);
 
   const suggestions = useMemo(() => {
-    if (!inputValue || inputValue.length < 2) return [];
+    if (!icaoCode || icaoCode.length < 1) return [];
     
-    return AIRPORT_DATABASE.filter(airport =>
-      airport.icao.toLowerCase().includes(inputValue.toLowerCase()) ||
-      airport.name.toLowerCase().includes(inputValue.toLowerCase())
-    ).slice(0, 5);
-  }, [inputValue]);
+    return searchAirports(icaoCode, 5);
+  }, [icaoCode]);
 
   // Валидация ICAO кода
   const validateIcaoCode = (code: string): boolean => {
@@ -85,53 +51,80 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
     e.preventDefault();
     setShowSuggestions(false);
     
-    const codeToSearch = inputValue.trim().toUpperCase();
-    
-    if (!codeToSearch) {
+    if (!icaoCode.trim()) {
       setLocalError('Введите ICAO код аэропорта');
       return;
     }
     
-    if (!validateIcaoCode(codeToSearch)) {
+    if (!validateIcaoCode(icaoCode)) {
       setLocalError('Введите корректный ICAO код (4 буквы)');
       return;
     }
     
     setLocalError(null);
-    onSearch(codeToSearch);
+    onSearch(icaoCode.trim().toUpperCase());
   };
 
   const handleInputChange = (value: string) => {
-    const upperValue = value.toUpperCase();
-    setInputValue(upperValue);
-    onCodeChange(upperValue);
-    setShowSuggestions(value.length >= 2);
     setLocalError(null);
+    onCodeChange(value.toUpperCase());
+    setShowSuggestions(value.length >= 1);
   };
 
   const handleSuggestionClick = (icao: string) => {
-    setInputValue(icao);
+    // Всегда заменяем текущее значение, даже если поле не пустое
     onCodeChange(icao);
     setShowSuggestions(false);
     setLocalError(null);
+    // Автоматически выполняем поиск при выборе из подсказок
     onSearch(icao);
   };
 
   const handleRecentClick = (code: string) => {
-    setInputValue(code);
+    // Всегда заменяем текущее значение при выборе из недавних
     onCodeChange(code);
     setShowSuggestions(false);
     setLocalError(null);
+    // Автоматически выполняем поиск
     onSearch(code);
   };
 
   const handleModalSelect = (icao: string) => {
-    setInputValue(icao);
+    // Всегда заменяем текущее значение при выборе из модального окна
     onCodeChange(icao);
     setShowModal(false);
     setLocalError(null);
+    // Автоматически выполняем поиск
     onSearch(icao);
   };
+
+  const handleInputFocus = () => {
+    setIsInputActive(true);
+    // Показываем подсказки если есть текст
+    if (icaoCode.length >= 1) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    setIsInputActive(false);
+    // Небольшая задержка чтобы успеть кликнуть на подсказку
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleClearInput = () => {
+    onCodeChange('');
+    setLocalError(null);
+    setShowSuggestions(false);
+  };
+
+  const handleSelectAllText = (e: React.FocusEvent<HTMLInputElement>) => {
+    // При фокусе выделяем весь текст для удобства замены
+    e.target.select();
+  };
+
+  // Показываем подсказки только если поле активно и есть что искать
+  const shouldShowSuggestions = showSuggestions && isInputActive && suggestions.length > 0;
 
   return (
     <>
@@ -144,22 +137,61 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
           
           <InputGroup>
             <div style={{ position: 'relative', flex: 1 }}>
-              <AirportInput
-                id="airport-code"
-                type="text"
-                value={inputValue}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onFocus={() => setShowSuggestions(inputValue.length >= 2)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                placeholder="Например: UUEE"
-                maxLength={4}
-                disabled={loading}
-                style={{ 
-                  borderColor: localError ? '#ff6b6b' : '#1a6fc4' 
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <AirportInput
+                  id="airport-code"
+                  type="text"
+                  value={icaoCode}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  onFocus={(e) => {
+                    handleInputFocus();
+                    handleSelectAllText(e);
+                  }}
+                  onBlur={handleInputBlur}
+                  placeholder="Например: UUEE"
+                  maxLength={4}
+                  disabled={loading}
+                  style={{ 
+                    borderColor: localError ? '#ff6b6b' : '#1a6fc4',
+                    paddingRight: icaoCode ? '40px' : '16px'
+                  }}
+                />
+                {icaoCode && (
+                  <button
+                    type="button"
+                    onClick={handleClearInput}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#8892b0',
+                      cursor: 'pointer',
+                      fontSize: '1.2rem',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#ff6b6b';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#8892b0';
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               
-              {showSuggestions && suggestions.length > 0 && (
+              {shouldShowSuggestions && (
                 <SuggestionsList>
                   {suggestions.map((airport) => (
                     <SuggestionItem
@@ -167,7 +199,7 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleSuggestionClick(airport.icao)}
                     >
-                      <strong>{airport.icao}</strong> - {airport.name}
+                      <strong>{airport.icao}</strong> - {airport.name}, {airport.country}
                     </SuggestionItem>
                   ))}
                 </SuggestionsList>
@@ -176,7 +208,7 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
             
             <SearchButton 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !icaoCode.trim()}
             >
               {loading ? '⏳ Загрузка...' : '🔍 Поиск'}
             </SearchButton>
@@ -213,8 +245,12 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
                 type="button"
                 onClick={() => handleRecentClick(code)}
                 disabled={loading}
+                style={{
+                  opacity: code === icaoCode ? 0.6 : 1
+                }}
+                title={code === icaoCode ? 'Текущий аэропорт' : `Выбрать ${code}`}
               >
-                ✈️ {code}
+                ✈️ {code} {code === icaoCode && '✓'}
               </RecentButton>
             ))}
           </RecentAirports>
