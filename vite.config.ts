@@ -12,5 +12,19 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
+  },
+  server: {
+    proxy: {
+      '/api/aviationweather': {
+        target: 'https://aviationweather.gov',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/aviationweather/, ''),
+        secure: false,
+      }
+    }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false
   }
 });

@@ -17,7 +17,12 @@ export const useMetarData = () => {
   useEffect(() => {
     const saved = localStorage.getItem('recentAirports');
     if (saved) {
-      setRecentAirports(JSON.parse(saved));
+      try {
+        setRecentAirports(JSON.parse(saved));
+      } catch {
+        console.warn('Failed to parse recent airports from localStorage');
+        setRecentAirports([]);
+      }
     }
   }, []);
 
@@ -26,7 +31,11 @@ export const useMetarData = () => {
     const codeUpper = code.toUpperCase();
     const updated = [codeUpper, ...recentAirports.filter(a => a !== codeUpper)].slice(0, 5);
     setRecentAirports(updated);
-    localStorage.setItem('recentAirports', JSON.stringify(updated));
+    try {
+      localStorage.setItem('recentAirports', JSON.stringify(updated));
+    } catch {
+      console.warn('Failed to save recent airports to localStorage');
+    }
   };
 
   const fetchData = async (code: string) => {
@@ -50,7 +59,8 @@ export const useMetarData = () => {
       setIcaoCode(codeUpper);
       addToRecentAirports(codeUpper);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
+      const errorMessage = err instanceof Error ? err.message : 'Неизвестная ошибка при получении данных';
+      setError(errorMessage);
       setMetarData(null);
       setRawMetar('');
     } finally {
