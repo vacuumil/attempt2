@@ -1,5 +1,5 @@
 // src/components/meteorology/Meteorology.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Content, PageHeader, PageTitle, PageDescription } from './Meteorology.styles';
 
 // Компоненты
@@ -38,27 +38,35 @@ const Meteorology: React.FC = () => {
   const [loadingTaf, setLoadingTaf] = useState(false);
   const [loadingSigmet, setLoadingSigmet] = useState(false);
   const [tafError, setTafError] = useState<string | null>(null);
+  const [lastTafFetchTime, setLastTafFetchTime] = useState<number>(0);
 
-  // Загрузка TAF данных при изменении аэропорта
-  useEffect(() => {
-    if (icaoCode && icaoCode.length === 4) {
-      loadTafData(icaoCode);
-      loadSigmetData(icaoCode);
-    } else {
-      // Сбрасываем данные если код аэропорта невалидный
-      setTafData(null);
-      setSigmetData([]);
-      setTafError(null);
+  // Кэширование TAF данных на 10 минут
+  const TAF_CACHE_DURATION = 10 * 60 * 1000;
+
+  // Используем useCallback для стабильной ссылки на функцию
+  const loadTafData = useCallback(async (code: string) => {
+    // Проверка кэша
+    const now = Date.now();
+    if (code === icaoCode && tafData && (now - lastTafFetchTime) < TAF_CACHE_DURATION) {
+      console.log('🔄 Использую кэшированные данные TAF');
+      return;
     }
-  }, [icaoCode]);
 
-  const loadTafData = async (code: string) => {
     setLoadingTaf(true);
     setTafError(null);
     try {
-      console.log('🔄 Загрузка TAF для аэропорта:', code);
+      console.log('🔄 Загрузка REAL TAF для аэропорта:', code);
+      console.time(`TAF Fetch ${code}`);
       const rawTaf = await fetchTafData(code);
-      console.log('📨 Получен сырой TAF:', rawTaf);
+      console.timeEnd(`TAF Fetch ${code}`);
+      
+      console.log('📨 Получен TAF:', rawTaf.substring(0, 100) + '...');
+      
+      // Проверяем, не mock ли это
+      if (rawTaf.includes('🎭 Генерация mock') || rawTaf.includes('🎯 Использую реалистичный')) {
+        console.warn('⚠️ Используются mock данные TAF');
+        setTafError('Реальные данные TAF временно недоступны. Показаны демо-данные.');
+      }
       
       if (!rawTaf || rawTaf.includes('No TAF available') || rawTaf.length < 10) {
         setTafError('TAF недоступен для этого аэропорта');
@@ -66,11 +74,13 @@ const Meteorology: React.FC = () => {
         return;
       }
       
-      // Используем улучшенный парсер с обработкой ошибок
       let parsedTaf;
       try {
+        console.time(`TAF Parse ${code}`);
         parsedTaf = parseTafEnhanced(rawTaf);
-        console.log('✅ Успешный парсинг улучшенным парсером:', parsedTaf);
+        console.timeEnd(`TAF Parse ${code}`);
+        
+        console.log('✅ Успешный парсинг TAF:', parsedTaf);
         
         // Валидация распарсенных данных
         if (!parsedTaf.issuanceTime || !parsedTaf.validity.from || !parsedTaf.validity.to) {
@@ -84,7 +94,8 @@ const Meteorology: React.FC = () => {
       
       if (parsedTaf && parsedTaf.forecast && parsedTaf.forecast.length > 0) {
         setTafData(parsedTaf);
-        console.log('📊 TAF данные установлены:', parsedTaf);
+        setLastTafFetchTime(now);
+        console.log('📊 TAF данные установлены');
       } else {
         setTafError('Не удалось распарсить данные TAF');
         console.error('❌ Ошибка парсинга TAF - нет данных прогноза');
@@ -97,9 +108,9 @@ const Meteorology: React.FC = () => {
     } finally {
       setLoadingTaf(false);
     }
-  };
+  }, [icaoCode, tafData, lastTafFetchTime, TAF_CACHE_DURATION]); // Добавляем зависимости
 
-  const loadSigmetData = async (code: string) => {
+  const loadSigmetData = useCallback(async (code: string) => {
     setLoadingSigmet(true);
     try {
       const rawSigmet = await fetchSigmetData(code);
@@ -111,7 +122,20 @@ const Meteorology: React.FC = () => {
     } finally {
       setLoadingSigmet(false);
     }
-  };
+  }, []);
+
+  // Загрузка TAF данных при изменении аэропорта
+  useEffect(() => {
+    if (icaoCode && icaoCode.length === 4) {
+      loadTafData(icaoCode);
+      loadSigmetData(icaoCode);
+    } else {
+      // Сбрасываем данные если код аэропорта невалидный
+      setTafData(null);
+      setSigmetData([]);
+      setTafError(null);
+    }
+  }, [icaoCode, loadTafData, loadSigmetData]); // Добавляем функции в зависимости
 
   const handleSearch = (code: string) => {
     fetchData(code);
@@ -132,7 +156,7 @@ const Meteorology: React.FC = () => {
         if (!metarData) {
           return (
             <div style={{ textAlign: 'center', padding: '40px', color: '#8892b0' }}>
-              {loading ? 'Загрузка текущих данных...' : 'Данные METAR не доступны для этого аэропорта'}
+              {loading ? '🔄 Загрузка текущих данных METAR...' : '❌ Данные METAR не доступны для этого аэропорта'}
             </div>
           );
         }
@@ -144,6 +168,26 @@ const Meteorology: React.FC = () => {
         );
 
       case 'taf':
+        if (loadingTaf) {
+          return (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#8892b0' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid rgba(100, 255, 218, 0.3)',
+                borderLeft: '4px solid #64ffda',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 20px auto'
+              }}></div>
+              <p>📅 Загрузка прогноза TAF...</p>
+              <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
+                Получение актуального прогноза на 24-30 часов
+              </p>
+            </div>
+          );
+        }
+
         if (tafError) {
           return (
             <div style={{ 
@@ -169,8 +213,17 @@ const Meteorology: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                Повторить попытку
+                🔄 Повторить попытку
               </button>
+            </div>
+          );
+        }
+        
+        if (!tafData) {
+          return (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#8892b0' }}>
+              <h4 style={{ color: '#ff6b6b', marginBottom: '15px' }}>❌ Данные TAF недоступны</h4>
+              <p>Не удалось загрузить TAF для аэропорта {icaoCode}</p>
             </div>
           );
         }
@@ -238,7 +291,7 @@ const Meteorology: React.FC = () => {
             marginBottom: '20px',
             color: '#ff6b6b'
           }}>
-            <strong>Ошибка METAR:</strong> {error}
+            <strong>❌ Ошибка METAR:</strong> {error}
             <button 
               onClick={clearError}
               style={{
@@ -268,7 +321,7 @@ const Meteorology: React.FC = () => {
           />
         )}
 
-        {/* Индикаторы загрузки */}
+        {/* Индикаторы загрузки с прогрессом */}
         {(loading || loadingTaf || loadingSigmet) && (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{
@@ -281,10 +334,18 @@ const Meteorology: React.FC = () => {
               margin: '0 auto 20px auto'
             }}></div>
             <p style={{ color: '#64ffda' }}>
-              {loading && 'Загрузка текущих данных...'}
-              {loadingTaf && 'Загрузка прогноза...'}
-              {loadingSigmet && 'Загрузка предупреждений...'}
+              {loading && '🔄 Загрузка текущих данных METAR...'}
+              {loadingTaf && '📅 Загрузка прогноза TAF...'}
+              {loadingSigmet && '⚠️ Загрузка предупреждений...'}
             </p>
+            <div style={{
+              marginTop: '10px',
+              fontSize: '0.9rem',
+              color: '#8892b0'
+            }}>
+              {loading && 'Используются надежные источники: AVWX, CheckWX, AviationAPI'}
+              {loadingTaf && 'Получение актуального прогноза на 24-30 часов'}
+            </div>
             <style>{`
               @keyframes spin {
                 0% { transform: rotate(0deg); }

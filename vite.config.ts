@@ -1,12 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import json from '@rollup/plugin-json';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    json()
-  ],
+  plugins: [react()],
   base: './',
   resolve: {
     alias: {
@@ -15,16 +11,21 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/aviationweather': {
-        target: 'https://aviationweather.gov',
+      '/api/avwx': {
+        target: 'https://avwx.rest',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/aviationweather/, ''),
-        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/avwx/, '')
+      },
+      '/api/checkwx': {
+        target: 'https://api.checkwx.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/checkwx/, '')
       }
     }
   },
   build: {
-    outDir: 'dist',
-    sourcemap: false
+    rollupOptions: {
+      external: []
+    }
   }
 });

@@ -34,6 +34,11 @@ export type {
 
 export { 
   parseSigmet, 
-  fetchSigmetData 
+  fetchSigmetData,
+  getSigmetTypeDescription,
+  getSigmetColor,
+  getSigmetIcon
 } from './sigmetParser';
-export type { SigmetData } from './sigmetParser';
+export type { 
+  SigmetData 
+} from './sigmetParser';

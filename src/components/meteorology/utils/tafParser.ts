@@ -1,5 +1,7 @@
 // src/components/meteorology/utils/tafParser.ts
 
+import { aviationWeatherAPI } from '../api/aviationWeather';
+
 export interface TurbulenceInfo {
   intensity: string;
   minAltitude: number;
@@ -683,65 +685,21 @@ export const parseTaf = (tafString: string): ParsedTaf => {
  */
 export const fetchTafData = async (icaoCode: string): Promise<string> => {
   try {
-    console.log('Fetching TAF for:', icaoCode);
+    console.log('🔄 TafParser: Быстрый запрос TAF для', icaoCode);
     
-    if (!icaoCode || icaoCode.length !== 4 || !/^[A-Z]{4}$/i.test(icaoCode)) {
-      throw new Error('Неверный формат ICAO кода');
-    }
-
-    // Aviation Weather Center API для TAF
-    const response = await fetch(
-      `https://aviationweather.gov/api/data/taf?ids=${icaoCode.toUpperCase()}`,
-      {
-        method: 'GET',
-        headers: { 
-          'Accept': 'text/plain',
-          'User-Agent': 'AeroTrainer/1.0'
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    const data = await response.text();
-    console.log('Raw TAF response:', data);
-
-    if (!data || data.includes('404') || data.includes('No data') || data.includes('ERROR')) {
-      return generateMockTaf(icaoCode);
-    }
-
-    const tafs = data.trim().split('\n');
-    const firstTaf = tafs[0].trim();
+    // Используем нашу быструю службу
+    return await aviationWeatherAPI.fetchTafData(icaoCode);
     
-    if (!firstTaf || firstTaf.length < 10) {
-      return generateMockTaf(icaoCode);
-    }
-
-    return firstTaf;
   } catch (error) {
-    console.error('Error fetching TAF:', error);
-    return generateMockTaf(icaoCode);
+    console.error('❌ TafParser: Ошибка получения TAF:', error);
+    // Быстрый fallback
+    const icao = icaoCode.toUpperCase();
+    const now = new Date();
+    const day = now.getUTCDate().toString().padStart(2, '0');
+    const hour = now.getUTCHours().toString().padStart(2, '0');
+    
+    return `TAF ${icao} ${day}${hour}00Z ${day}${hour}00/${day}${(parseInt(hour) + 24) % 24}00Z VRB03KT 9999 SCT030`;
   }
-};
-
-/**
- * Генерирует mock TAF данные для тестирования
- */
-const generateMockTaf = (icaoCode: string): string => {
-  const now = new Date();
-  const day = now.getUTCDate().toString().padStart(2, '0');
-  const hour = now.getUTCHours().toString().padStart(2, '0');
-  
-  const mockTaf = `TAF ${icaoCode} ${day}${hour}00Z ${day}${hour}00/${day}${(parseInt(hour) + 24) % 24}00Z 
-  VRB03KT 9999 SCT030 
-  BECMG ${day}${(parseInt(hour) + 6) % 24}00/${day}${(parseInt(hour) + 8) % 24}00 12010G20KT 
-  TEMPO ${day}${(parseInt(hour) + 12) % 24}00/${day}${(parseInt(hour) + 16) % 24}00 4000 -RA BKN015 
-  PROB30 ${day}${(parseInt(hour) + 18) % 24}00/${day}${(parseInt(hour) + 22) % 24}00 2000 TSRA BKN008CB
-  TX15/1215Z TN05/0304Z`;
-
-  return mockTaf.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 };
 
 /**
@@ -799,6 +757,7 @@ export const parseTafEnhanced = (tafString: string): ParsedTaf => {
   }
 };
 
+
 /**
  * Нормализация TAF данных после парсинга
  */
@@ -847,7 +806,6 @@ export const parseTafSafely = (tafString: string): ParsedTaf | null => {
     return null;
   }
 };
-
 /**
  * Получить текстовое описание ветра
  */
