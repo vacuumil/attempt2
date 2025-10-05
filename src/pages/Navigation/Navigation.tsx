@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SpeedTriangle } from '../../components/navigation/SpeedTriangle';
 import { VorPage } from '../../components/navigation/vor/VorPage';
-import { IlsPage } from '../../components/navigation/ils/IlsPage';
+import { FlightPlanPage } from '../../components/navigation/flight-plan/FlightPlanPage';
 import {
   Container,
   Title,
@@ -14,7 +14,8 @@ import {
   DescriptionText
 } from './Navigation.styles';
 
-type TabType = 'overview' | 'map' | 'vor' | 'ils' | 'triangle';
+// ОБНОВЛЯЕМ тип вкладки - заменяем 'ils' на 'flightplan'
+type TabType = 'overview' | 'map' | 'vor' | 'flightplan' | 'triangle';
 
 interface NavigationModule {
   icon: string;
@@ -34,10 +35,10 @@ export const Navigation: React.FC = () => {
       id: 'vor'
     },
     { 
-      icon: '🛬', 
-      title: 'ILS', 
-      description: 'Система захода на посадку',
-      id: 'ils'
+      icon: '🧭',
+      title: 'Расчет РПП', 
+      description: 'Штурманский бортовой журнал',
+      id: 'flightplan' 
     },
     { 
       icon: '🔺', 
@@ -53,8 +54,8 @@ export const Navigation: React.FC = () => {
         return <SpeedTriangle />;
       case 'vor':
         return <VorPage />;
-      case 'ils':
-        return <IlsPage />;
+      case 'flightplan': // ЗАМЕНЯЕМ 'ils' на 'flightplan'
+        return <FlightPlanPage />;
       case 'overview':
       default:
         return (
@@ -100,10 +101,10 @@ export const Navigation: React.FC = () => {
           VOR
         </Tab>
         <Tab 
-          active={activeTab === 'ils'} 
-          onClick={() => setActiveTab('ils')}
+          active={activeTab === 'flightplan'}
+          onClick={() => setActiveTab('flightplan')}
         >
-          ILS
+          Расчет РПП
         </Tab>
         <Tab 
           active={activeTab === 'triangle'} 
