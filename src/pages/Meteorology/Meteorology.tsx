@@ -3,21 +3,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Content, PageHeader, PageTitle, PageDescription } from './Meteorology.styles';
 
 // Компоненты
-import { AirportSelector } from '../../../src/components/meteorology/components/AirportSelector';
-import { WeatherTabs} from '../../../src/components/meteorology/components/WeatherTabs';
-import type { WeatherDataType } from '../../../src/components/meteorology/components/WeatherTabs';
-import { WeatherVisualization } from '../../../src/components/meteorology/components/WeatherVisualization';
-import { MetarDisplay } from '../../../src/components/meteorology/components/MetarDisplay';
-import { TafDisplay } from '../../../src/components/meteorology/components/TafDisplay';
-import type { ParsedTaf } from '../../../src/components/meteorology/utils/tafParser';
-import { SigmetDisplay } from '../../../src/components/meteorology/components/SigmetDisplay';
-import type { SigmetData  } from '../../../src/components/meteorology/utils/sigmetParser';
+import { AirportSelector } from '../../components/meteorology/components/AirportSelector';
+import { WeatherTabs } from '../../components/meteorology/components/WeatherTabs';
+import type { WeatherDataType } from '../../components/meteorology/components/WeatherTabs';
+import { WeatherVisualization } from '../../components/meteorology/components/WeatherVisualization';
+import { MetarDisplay } from '../../components/meteorology/components/MetarDisplay';
+import { TafDisplay } from '../../components/meteorology/components/TafDisplay';
+import type { ParsedTaf } from '../../components/meteorology/utils/tafParser';
+import { SigmetDisplay } from '../../components/meteorology/components/SigmetDisplay';
+import type { SigmetData } from '../../components/meteorology/utils/sigmetParser';
 
 // Хуки и утилиты
-import { useMetarData } from '../../../src/components/meteorology/hooks';
-import { parseTafEnhanced, parseTafSafely } from '../../../src/components/meteorology/utils/tafParser';
-import { fetchTafData,  } from '../../../src/components/meteorology/utils/tafParser';
-import { fetchSigmetData, parseSigmet, } from '../../../src/components/meteorology/utils/sigmetParser';
+import { useMetarData } from '../../components/meteorology/hooks/useMetarData';
+import { parseTafEnhanced, parseTafSafely } from '../../components/meteorology/utils/tafParser';
+import { fetchTafData } from '../../components/meteorology/api/aviationWeather'; 
+import { fetchSigmetData, parseSigmet } from '../../components/meteorology/utils/sigmetParser';
 
 const Meteorology: React.FC = () => {
   const {
@@ -39,16 +39,17 @@ const Meteorology: React.FC = () => {
   const [loadingSigmet, setLoadingSigmet] = useState(false);
   const [tafError, setTafError] = useState<string | null>(null);
   const [lastTafFetchTime, setLastTafFetchTime] = useState<number>(0);
+  const [lastIcaoCode, setLastIcaoCode] = useState<string>(''); // ИСПРАВЛЕНИЕ: отслеживаем предыдущий код
 
   // Кэширование TAF данных на 10 минут
   const TAF_CACHE_DURATION = 10 * 60 * 1000;
 
   // Используем useCallback для стабильной ссылки на функцию
   const loadTafData = useCallback(async (code: string) => {
-    // Проверка кэша
+    // ИСПРАВЛЕНИЕ: Проверяем, действительно ли нужно обновлять данные
     const now = Date.now();
-    if (code === icaoCode && tafData && (now - lastTafFetchTime) < TAF_CACHE_DURATION) {
-      console.log('🔄 Использую кэшированные данные TAF');
+    if (code === lastIcaoCode && tafData && (now - lastTafFetchTime) < TAF_CACHE_DURATION) {
+      console.log('🔄 Использую кэшированные данные TAF для', code);
       return;
     }
 
@@ -95,7 +96,8 @@ const Meteorology: React.FC = () => {
       if (parsedTaf && parsedTaf.forecast && parsedTaf.forecast.length > 0) {
         setTafData(parsedTaf);
         setLastTafFetchTime(now);
-        console.log('📊 TAF данные установлены');
+        setLastIcaoCode(code); // ИСПРАВЛЕНИЕ: сохраняем код аэропорта
+        console.log('📊 TAF данные установлены для', code);
       } else {
         setTafError('Не удалось распарсить данные TAF');
         console.error('❌ Ошибка парсинга TAF - нет данных прогноза');
@@ -108,7 +110,7 @@ const Meteorology: React.FC = () => {
     } finally {
       setLoadingTaf(false);
     }
-  }, [icaoCode, tafData, lastTafFetchTime, TAF_CACHE_DURATION]); // Добавляем зависимости
+  }, [lastIcaoCode, tafData, lastTafFetchTime, TAF_CACHE_DURATION]);
 
   const loadSigmetData = useCallback(async (code: string) => {
     setLoadingSigmet(true);
@@ -124,22 +126,32 @@ const Meteorology: React.FC = () => {
     }
   }, []);
 
-  // Загрузка TAF данных при изменении аэропорта
+  // Загрузка TAF данных при изменении аэропорта - ИСПРАВЛЕННАЯ ЛОГИКА
   useEffect(() => {
-    if (icaoCode && icaoCode.length === 4) {
+    if (icaoCode && icaoCode.length === 4 && icaoCode !== lastIcaoCode) {
+      console.log('🔄 Смена аэропорта, загружаем TAF для:', icaoCode);
       loadTafData(icaoCode);
       loadSigmetData(icaoCode);
-    } else {
+    } else if (!icaoCode || icaoCode.length !== 4) {
       // Сбрасываем данные если код аэропорта невалидный
+      console.log('🔄 Сброс данных TAF - невалидный код аэропорта');
       setTafData(null);
       setSigmetData([]);
       setTafError(null);
+      setLastIcaoCode('');
     }
-  }, [icaoCode, loadTafData, loadSigmetData]); // Добавляем функции в зависимости
+  }, [icaoCode, loadTafData, loadSigmetData, lastIcaoCode]);
 
+  // ИСПРАВЛЕНИЕ: Обработчик поиска теперь корректно обновляет все данные
   const handleSearch = (code: string) => {
+    console.log('🔍 Поиск данных для аэропорта:', code);
     fetchData(code);
     setActiveTab('metar'); // Переключаем на METAR после нового поиска
+    
+    // Принудительно сбрасываем предыдущий код аэропорта
+    if (code !== lastIcaoCode) {
+      setLastIcaoCode('');
+    }
   };
 
   const handleCodeChange = (code: string) => {

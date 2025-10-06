@@ -19,11 +19,7 @@ export type {
   MetarModifiers,
   MetarTrend,
   TrendForecast
-} from './metarParser';
-export { 
-  parseTaf, 
-  fetchTafData 
-} from './tafParser';
+} from './metarParser';;
 export type { 
   ParsedTaf, 
   TafForecast, 

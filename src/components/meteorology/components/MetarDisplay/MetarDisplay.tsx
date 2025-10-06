@@ -108,13 +108,30 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
     return visibility.value === 10000 ? '9999' : visibility.value.toString();
   };
 
+  // Функция для отображения вариаций видимости
+  const renderVisibilityVariations = (visibility: ParsedMetar['visibility']) => {
+    if (!visibility.variations || visibility.variations.length === 0) return null;
+    
+    return (
+      <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(26, 111, 196, 0.1)', borderRadius: '4px' }}>
+        <div style={{ fontSize: '0.9rem', color: '#ffd700', marginBottom: '5px' }}>
+          Видимость по направлениям:
+        </div>
+        {visibility.variations.map((variation, index) => (
+          <div key={index} style={{ fontSize: '0.8rem', color: '#e6f1ff' }}>
+            • {variation.value} м в {variation.description} направлении ({variation.direction})
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const formatVisibilityText = (visibility: ParsedMetar['visibility']): string => {
     if (visibility.isCavok) {
       return 'Видимость ≥10 км, нет облаков ниже 5000 ft, нет опасных явлений';
     }
     
     if (visibility.unit === 'SM') {
-      // Видимость в статутных милях - используем оригинальное значение
       let prefix = '';
       if (visibility.isLessThan) prefix = 'Менее ';
       if (visibility.isGreaterThan) prefix = 'Более ';
@@ -131,7 +148,17 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
     if (visibility.isLessThan) prefix = 'Менее ';
     if (visibility.isGreaterThan) prefix = 'Более ';
     
-    return `${prefix}${visibility.value} метров`;
+    const baseText = `${prefix}${visibility.value} метров`;
+    
+    // Добавляем информацию о вариациях если есть
+    if (visibility.variations && visibility.variations.length > 0) {
+      const variationsText = visibility.variations.map(v => 
+        `${v.value} м (${v.description})`
+      ).join(', ');
+      return `${baseText}. Локально: ${variationsText}`;
+    }
+    
+    return baseText;
   };
 
   const getRemarkTypeColor = (type: string): string => {
@@ -248,9 +275,15 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
                   в статутных милях
                 </div>
               )}
+              {metarData.visibility.variations && metarData.visibility.variations.length > 0 && (
+                <div style={{ fontSize: '0.8rem', color: '#ffd700', marginTop: '5px' }}>
+                  + {metarData.visibility.variations.length} направл.
+                </div>
+              )}
             </ParameterCell>
             <DecodingCell>
               {formatVisibilityText(metarData.visibility)}
+              {renderVisibilityVariations(metarData.visibility)}
             </DecodingCell>
           </TableRow>
 
@@ -503,6 +536,14 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
               <li><strong>RMK</strong> — Примечания и дополнительные данные</li>
             </ul>
 
+            <h4>Специальные примечания (RMK):</h4>
+            <ul>
+              <li><strong>QBBxxx</strong> - Высота основания облаков (xxx × 100 ft = общая высота в футах)</li>
+              <li><strong>Пример: QBB060</strong> - 060 × 100 = 6000 ft (≈1829 м)</li>
+              <li><strong>Видимость 3900 1800NW</strong> - Основная видимость 3900м, в северо-западном направлении 1800м</li>
+              <li><strong>R06R/290151</strong> - Состояние ВПП 06R: тип 2, покрытие 90%, глубина 01мм, сцепление 51</li>
+            </ul>
+
             <h4>Типы примечаний (RMK):</h4>
             <ul>
               <li><strong style={{ color: '#ff6b6b' }}>🌦️ Погода</strong> - начало/окончание явлений</li>
@@ -511,6 +552,14 @@ export const MetarDisplay: React.FC<MetarDisplayProps> = ({ rawMetar, metarData 
               <li><strong style={{ color: '#ffd700' }}>💨 Ветер</strong> - изменения и особенности</li>
               <li><strong style={{ color: '#9d4edd' }}>🛬 ВПП</strong> - состояние покрытия</li>
               <li><strong style={{ color: '#8892b0' }}>⚙️ Система</strong> - информация о станции</li>
+            </ul>
+
+            <h4>Коды состояния ВПП:</h4>
+            <ul>
+              <li><strong>Первая цифра</strong> - тип покрытия (0-сухая, 1-влажная, 2-лужи, 3-иней, 4-снег)</li>
+              <li><strong>Вторая цифра</strong> - покрытие (1-10%, 2-25%, 5-50%, 9-100%)</li>
+              <li><strong>Третья-четвертая</strong> - глубина (мм)</li>
+              <li><strong>Пятая-шестая</strong> - коэффициент сцепления</li>
             </ul>
           </EducationalContent>
         </EducationalSection>

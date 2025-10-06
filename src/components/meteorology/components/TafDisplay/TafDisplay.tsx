@@ -1,20 +1,30 @@
 // src/components/meteorology/components/TafDisplay/TafDisplay.tsx
-import React, { useState, useMemo } from 'react';
-import type { ParsedTaf, TurbulenceInfo, IcingInfo, TemperatureInfo } from '../../utils/tafParser';
+import React from 'react';
+import type { ParsedTaf, TafForecast, TafWeather, TafCloud, TemperatureInfo } from '../../utils/tafParser';
 import { 
   getWindDescription, 
   getVisibilityDescription, 
   getWeatherDescription, 
   getCloudDescriptionWithHazards,
-  getCbHazardsDescription
+  getCbHazardsDescription,
+  getTurbulenceDescription,
+  getIcingDescription,
+  formatTafTimeForDisplay
 } from '../../utils/tafParser';
 import {
   TafContainer,
-  TafPeriod,
-  ForecastGroup,
-  WeatherTimeline,
-  TimelineItem,
-  ChangeIndicator
+  TafHeader,
+  TafCode,
+  PeriodCard,
+  PeriodHeader,
+  WeatherGrid,
+  WeatherItem,
+  WeatherValue,
+  WeatherGroup,
+  ChangeIndicator,
+  DangerSection,
+  StatusIndicator,
+  InfoSection
 } from './TafDisplay.styles';
 
 interface TafDisplayProps {
@@ -23,33 +33,7 @@ interface TafDisplayProps {
 }
 
 export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => {
-  const [expandedPeriods, setExpandedPeriods] = useState<Set<number>>(new Set([0]));
-
-  // Выносим useMemo ДО любого условия
-  const activePeriodIndex = useMemo(() => {
-    if (!tafData || !tafData.forecast || tafData.forecast.length === 0) {
-      return -1;
-    }
-
-    const now = new Date();
-    const currentDay = now.getUTCDate().toString().padStart(2, '0');
-    const currentTime = now.getUTCHours().toString().padStart(2, '0') + 
-                       now.getUTCMinutes().toString().padStart(2, '0');
-
-    return tafData.forecast.findIndex(period => {
-      if (!period || !period.validity.from || !period.validity.to) return false;
-      
-      const fromDay = period.validity.from.slice(0, 2);
-      const fromTime = period.validity.from.slice(2, 6);
-      const toTime = period.validity.to.slice(2, 6);
-
-      // Упрощенная проверка актуальности периода
-      return fromDay === currentDay && fromTime <= currentTime && currentTime <= toTime;
-    });
-  }, [tafData]);
-
-  // Теперь можно делать проверку после хуков
-  if (!tafData || !tafData.forecast || tafData.forecast.length === 0) {
+  if (!tafData) {
     return (
       <TafContainer>
         <div style={{ textAlign: 'center', padding: '40px', color: '#8892b0' }}>
@@ -59,92 +43,6 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
       </TafContainer>
     );
   }
-
-  const togglePeriod = (index: number) => {
-    const newExpanded = new Set(expandedPeriods);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
-    } else {
-      newExpanded.add(index);
-    }
-    setExpandedPeriods(newExpanded);
-  };
-
-  const formatValidity = (from: string, to: string): string => {
-    if (!from || !to) return 'Время не указано';
-    
-    try {
-      const fromDay = parseInt(from.slice(0, 2));
-      const fromHour = from.slice(2, 4);
-      const fromMinute = from.slice(4, 6) || '00';
-      
-      const toDay = parseInt(to.slice(0, 2));
-      const toHour = to.slice(2, 4);
-      const toMinute = to.slice(4, 6) || '00';
-      
-      // Если дни разные, показываем оба дня
-      if (fromDay !== toDay) {
-        return `${fromDay}.${fromHour}:${fromMinute} - ${toDay}.${toHour}:${toMinute}Z`;
-      }
-      
-      return `${fromHour}:${fromMinute} - ${toHour}:${toMinute}Z`;
-    } catch (error) {
-      console.warn('Ошибка формата периода:', from, to, error);
-      return 'Ошибка формата периода';
-    }
-  };
-
-  // Вспомогательная функция для названий месяцев
-  const getMonthName = (month: number): string => {
-    const months = [
-      'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-      'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
-    ];
-    return months[month - 1] || '';
-  };
-
-  const formatDate = (timeString: string): string => {
-    if (!timeString || timeString.length < 4) return 'Время не указано';
-    
-    try {
-      // Для времени выпуска (DDHHMMZ) - 6 или 7 символов
-      if (timeString.length >= 6) {
-        const day = timeString.slice(0, 2);
-        const hour = timeString.slice(2, 4);
-        const minute = timeString.length >= 6 ? timeString.slice(4, 6) : '00';
-        
-        // Определяем месяц и год
-        const now = new Date();
-        const currentYear = now.getUTCFullYear();
-        const currentMonth = now.getUTCMonth() + 1;
-        
-        const dayNum = parseInt(day);
-        let month = currentMonth;
-        let year = currentYear;
-        
-        // Если день меньше текущего, предполагаем следующий месяц
-        const currentDay = now.getUTCDate();
-        if (dayNum < currentDay) {
-          month = currentMonth === 12 ? 1 : currentMonth + 1;
-          year = currentMonth === 12 ? currentYear + 1 : currentYear;
-        }
-        
-        return `${dayNum} ${getMonthName(month)} ${year}, ${hour}:${minute}Z`;
-      }
-      
-      // Для периодов (HHMM) - 4 символа
-      if (timeString.length === 4) {
-        const hour = timeString.slice(0, 2);
-        const minute = timeString.slice(2, 4);
-        return `${hour}:${minute}Z`;
-      }
-      
-      return timeString;
-    } catch (error) {
-      console.warn('Ошибка формата времени:', timeString, error);
-      return 'Ошибка формата времени';
-    }
-  };
 
   const getChangeTypeInfo = (type?: string, probability?: number) => {
     const types: Record<string, { icon: string; name: string; description: string; color: string }> = {
@@ -182,35 +80,6 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
     };
   };
 
-  const getPeriodSummary = (period: ParsedTaf['forecast'][0]) => {
-    const summary = [];
-    
-    if (period.wind) {
-      const windDir = period.wind.direction === 'VRB' ? 'Перем' : period.wind.direction;
-      summary.push(`💨 ${windDir}°/${period.wind.speed}kt`);
-    }
-    
-    if (period.visibility) {
-      summary.push(`👁️ ${period.visibility.isCavok ? 'CAVOK' : period.visibility.value + 'm'}`);
-    } else {
-      summary.push(`👁️ Не указана`);
-    }
-    
-    if (period.weather && period.weather.length > 0) {
-      const mainWeather = period.weather[0];
-      summary.push(getWeatherIcon(mainWeather.phenomena[0]));
-    }
-    
-    if (period.clouds && period.clouds.length > 0) {
-      const mainCloud = period.clouds.find(c => c.isCeiling) || period.clouds[0];
-      summary.push(`☁️ ${mainCloud.coverage.charAt(0)}`);
-    } else {
-      summary.push(`☁️ NSC`);
-    }
-
-    return summary.join(' • ');
-  };
-
   const getWeatherIcon = (phenomenon: string): string => {
     const icons: Record<string, string> = {
       'RA': '🌧️', 'SN': '❄️', 'FG': '🌫️', 'BR': '💨', 'HZ': '😶‍🌫️',
@@ -222,409 +91,351 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
     return icons[phenomenon] || '🌤️';
   };
 
-  const getTurbulenceDescription = (turbulence: TurbulenceInfo) => {
-    const intensityMap: Record<string, string> = {
-      'light': 'Слабая',
-      'light_moderate': 'Умеренно-слабая', 
-      'moderate': 'Умеренная',
-      'moderate_severe': 'Умеренно-сильная',
-      'severe': 'Сильная',
-      'extreme': 'Экстремальная'
-    };
-
-    return `${intensityMap[turbulence.intensity]} турбулентность на ${turbulence.minAltitude}-${turbulence.maxAltitude} ft`;
+  // Функция для проверки, есть ли данные в прогнозе
+  const hasForecastData = (period: TafForecast): boolean => {
+    return !!(period.wind || period.visibility || 
+             (period.weather && period.weather.length > 0) || 
+             (period.clouds && period.clouds.length > 0) ||
+             period.turbulence || period.icing ||
+             (period.temperature && period.temperature.length > 0));
   };
 
-  const getIcingDescription = (icing: IcingInfo) => {
-    const intensityMap: Record<string, string> = {
-      'light': 'Слабое',
-      'light_moderate': 'Умеренно-слабое',
-      'moderate': 'Умеренное', 
-      'severe': 'Сильное'
-    };
+  // Функция для рендеринга элементов прогноза с проверкой на наличие данных
+  const renderForecastElements = (period: TafForecast, changeType?: string) => {
+    const elements: React.ReactElement[] = [];
+    const isChangePeriod = !!changeType;
+    const isFmPeriod = changeType === 'FM'; // ИСПРАВЛЕНИЕ: отдельно обрабатываем FM
 
-    return `${intensityMap[icing.intensity]} обледенение на ${icing.minAltitude}-${icing.maxAltitude} ft`;
-  };
-
-  const getCeilingInfo = (clouds: ParsedTaf['forecast'][0]['clouds']) => {
-    if (!clouds || clouds.length === 0) return 'Нижняя граница: нет';
-    const ceiling = clouds.find(cloud => cloud.isCeiling);
-    return ceiling ? `Нижняя граница: ${ceiling.altitude} ft` : 'Нижняя граница: нет';
-  };
-
-  const getTemperatureDescription = (temp: TemperatureInfo): string => {
-    const typeText = temp.type === 'max' ? 'Максимальная' : 'Минимальная';
-    return `${typeText}: ${temp.value > 0 ? '+' : ''}${temp.value}°C в ${formatDate(temp.time)}`;
-  };
-
-  // Получаем общую информацию о TAF с защитой от undefined
-  const getTafOverview = () => {
-    const mainPeriod = tafData.forecast[0];
-    if (!mainPeriod) {
-      return {
-        hasSignificantWeather: false,
-        mainWind: undefined,
-        mainVisibility: undefined,
-        ceiling: 'Нижняя граница: нет данных'
-      };
+    // Ветер - показываем всегда если есть
+    if (period.wind) {
+      elements.push(
+        <WeatherItem key="wind">
+          <div className="weather-label">
+            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
+            Ветер
+          </div>
+          <WeatherValue>
+            {getWindDescription(period.wind)}
+          </WeatherValue>
+        </WeatherItem>
+      );
+    } else if (!isChangePeriod || isFmPeriod) {
+      // ИСПРАВЛЕНИЕ: Для основного прогноза и FM показываем "Не указан"
+      elements.push(
+        <WeatherItem key="wind">
+          <div className="weather-label">
+            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
+            Ветер
+          </div>
+          <WeatherValue>
+            Не указан
+          </WeatherValue>
+        </WeatherItem>
+      );
     }
 
-    const hasSignificantWeather = tafData.forecast.some(period => 
-      period.weather && period.weather.length > 0 || period.turbulence || period.icing
+    // Видимость - аналогичная логика
+    if (period.visibility) {
+      elements.push(
+        <WeatherItem key="visibility">
+          <div className="weather-label">
+            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
+            Видимость
+          </div>
+          <WeatherValue>
+            {getVisibilityDescription(period.visibility)}
+          </WeatherValue>
+        </WeatherItem>
+      );
+    } else if (!isChangePeriod || isFmPeriod) {
+      // ИСПРАВЛЕНИЕ: Для основного прогноза и FM показываем "Не указана"
+      elements.push(
+        <WeatherItem key="visibility">
+          <div className="weather-label">
+            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
+            Видимость
+          </div>
+          <WeatherValue>
+            Не указана
+          </WeatherValue>
+        </WeatherItem>
+      );
+    }
+
+    // Погодные явления - показываем всегда
+    elements.push(
+      <WeatherItem key="weather">
+        <div className="weather-label">
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🌦️</span>
+          Погодные явления
+        </div>
+        <WeatherValue>
+          {period.weather && period.weather.length > 0 ? (
+            <WeatherGroup>
+              {period.weather.map((weather: TafWeather, idx: number) => (
+                <div key={idx} className="weather-badge">
+                  <span style={{ marginRight: '5px' }}>
+                    {getWeatherIcon(weather.phenomena[0])}
+                  </span>
+                  {getWeatherDescription(weather)}
+                  <code className="weather-code">{weather.raw}</code>
+                </div>
+              ))}
+            </WeatherGroup>
+          ) : (
+            <span style={{ color: '#64ffda' }}>
+              {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительных явлений'}
+            </span>
+          )}
+        </WeatherValue>
+      </WeatherItem>
     );
-    
-    return {
-      hasSignificantWeather,
-      mainWind: mainPeriod.wind,
-      mainVisibility: mainPeriod.visibility,
-      ceiling: getCeilingInfo(mainPeriod.clouds)
-    };
+
+    // Облачность - показываем всегда
+    elements.push(
+      <WeatherItem key="clouds">
+        <div className="weather-label">
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>☁️</span>
+          Облачность
+        </div>
+        <WeatherValue>
+          {period.clouds && period.clouds.length > 0 ? (
+            <WeatherGroup>
+              {period.clouds.map((cloud: TafCloud, idx: number) => (
+                <div key={idx} className={`cloud-item ${cloud.isCeiling ? 'ceiling' : ''} ${cloud.type === 'CB' ? 'cb' : ''}`}>
+                  <div className="cloud-header">
+                    <strong>{cloud.coverage.toUpperCase()}{cloud.type ? `/${cloud.type}` : ''}</strong>
+                    <span>на {cloud.altitude} ft</span>
+                  </div>
+                  <div className="cloud-description">
+                    {getCloudDescriptionWithHazards(cloud)}
+                  </div>
+                </div>
+              ))}
+            </WeatherGroup>
+          ) : (
+            <span style={{ color: '#64ffda' }}>
+              {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительной облачности'}
+            </span>
+          )}
+        </WeatherValue>
+      </WeatherItem>
+    );
+
+    // ИСПРАВЛЕНИЕ: Для FM показываем все элементы, как для основного прогноза
+    if (isFmPeriod) {
+      return <WeatherGrid>{elements}</WeatherGrid>;
+    }
+
+    // Для других изменений показываем только сетку с существующими элементами
+    if (isChangePeriod) {
+      const changeElements = elements.filter(element => {
+        // Для изменений показываем только те элементы, где есть данные
+        const key = element.key;
+        if (key === 'wind' && !period.wind) return false;
+        if (key === 'visibility' && !period.visibility) return false;
+        if (key === 'weather' && (!period.weather || period.weather.length === 0)) return false;
+        if (key === 'clouds' && (!period.clouds || period.clouds.length === 0)) return false;
+        return true;
+      });
+
+      if (changeElements.length === 0) {
+        return (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '20px', 
+            color: '#8892b0',
+            fontStyle: 'italic'
+          }}>
+            Изменения не содержат конкретных метеоданных
+          </div>
+        );
+      }
+
+      return <WeatherGrid>{changeElements}</WeatherGrid>;
+    }
+
+    // Для основного прогноза показываем все элементы
+    return <WeatherGrid>{elements}</WeatherGrid>;
   };
 
-  const tafOverview = getTafOverview();
+  // Функция для рендеринга опасных явлений
+  const renderDangerElements = (period: TafForecast, changeType?: string) => {
+    const dangerElements: React.ReactElement[] = [];
+    const isChangePeriod = !!changeType;
+
+    // Опасные явления (турбулентность, обледенение)
+    if (period.turbulence || period.icing) {
+      dangerElements.push(
+        <DangerSection key="danger">
+          <h4>⚠️ Опасные явления</h4>
+          <div className="danger-grid">
+            {period.turbulence && (
+              <div className="danger-item">
+                <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
+                {getTurbulenceDescription(period.turbulence)}
+              </div>
+            )}
+            {period.icing && (
+              <div className="danger-item">
+                <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🧊</span>
+                {getIcingDescription(period.icing)}
+              </div>
+            )}
+          </div>
+        </DangerSection>
+      );
+    }
+
+    // Предупреждения для CB облаков
+    const cbHazards = getCbHazardsDescription(period.clouds || []);
+    if (cbHazards.length > 0) {
+      dangerElements.push(
+        <DangerSection key="cb-hazards">
+          <h4>🌩️ Опасности CB облаков</h4>
+          <div className="danger-grid">
+            {cbHazards.map((hazard, idx) => (
+              <div key={idx} className="danger-item">
+                • {hazard}
+              </div>
+            ))}
+          </div>
+        </DangerSection>
+      );
+    }
+
+    // Для изменений показываем только если есть опасные явления
+    if (isChangePeriod && dangerElements.length === 0) {
+      return null;
+    }
+
+    return dangerElements;
+  };
+
+  // Функция для рендеринга температуры
+  const renderTemperature = (period: TafForecast, changeType?: string) => {
+    const isChangePeriod = !!changeType;
+    
+    if (!period.temperature || period.temperature.length === 0) {
+      // Для изменений не показываем температуру если её нет
+      if (isChangePeriod) return null;
+      
+      // Для основного прогноза показываем пустой блок
+      return (
+        <WeatherGrid>
+          <WeatherItem>
+            <div className="weather-label">
+              <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🌡️</span>
+              Температура
+            </div>
+            <WeatherValue>
+              <span style={{ color: '#8892b0' }}>Не указана</span>
+            </WeatherValue>
+          </WeatherItem>
+        </WeatherGrid>
+      );
+    }
+
+    // Показываем температуру в основном блоке
+    return (
+      <WeatherGrid>
+        {period.temperature.map((temp: TemperatureInfo, idx: number) => (
+          <WeatherItem key={idx}>
+            <div className="weather-label">
+              <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>
+                {temp.type === 'max' ? '📈' : '📉'}
+              </span>
+              {temp.type === 'max' ? 'Максимальная' : 'Минимальная'} температура
+            </div>
+            <WeatherValue>
+              <strong>{temp.value > 0 ? '+' : ''}{temp.value}°C</strong>
+              <div style={{ fontSize: '0.8rem', color: '#8892b0', marginTop: '2px' }}>
+                в {formatTafTimeForDisplay(temp.time)}
+              </div>
+            </WeatherValue>
+          </WeatherItem>
+        ))}
+      </WeatherGrid>
+    );
+  };
 
   return (
     <TafContainer>
       {/* Заголовок с общей информацией */}
-      <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-        <h3 style={{ color: '#64ffda', marginBottom: '10px', fontSize: '1.8rem' }}>
-          📅 Авиационный прогноз (TAF) - {icaoCode}
-        </h3>
-        <div style={{ color: '#8892b0', lineHeight: '1.6' }}>
-          <div>
-            <strong>Выпущен:</strong> {tafData.issuanceTime ? formatDate(tafData.issuanceTime) : 'Не указано'}
-          </div>
-          <div>
-            <strong>Действителен:</strong> {formatDate(tafData.validity.from)} - {formatDate(tafData.validity.to)}
-          </div>
-          {activePeriodIndex !== -1 && (
-            <div style={{ color: '#64ffda', marginTop: '5px' }}>
-              ✅ <strong>Активный период:</strong> {activePeriodIndex + 1}-й из {tafData.forecast.length}
-            </div>
-          )}
+      <TafHeader>
+        <div className="header-main">
+          <h3>📅 Авиационный прогноз (TAF) - {tafData.icaoCode || icaoCode}</h3>
+          <StatusIndicator>
+            ✅ Актуальный прогноз
+          </StatusIndicator>
         </div>
-      </div>
-
-      {/* Исходные данные */}
-      <div style={{ marginTop: '25px' }}>
-
-        {/* Исходные данные TAF */}
-        <div style={{ 
-          padding: '15px',
-          background: 'rgba(10, 25, 47, 0.5)',
-          borderRadius: '8px',
-          border: '1px solid #64ffda'
-        }}>
-          <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📋 Исходный TAF:</h4>
-          <code style={{ 
-            display: 'block',
-            padding: '10px',
-            background: 'rgba(0, 0, 0, 0.3)',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            color: '#e6f1ff',
-            fontFamily: 'Share Tech Mono, monospace',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all'
-          }}>
-            {tafData.raw}
-          </code>
+        <div className="taf-meta">
+          <InfoSection>
+            <WeatherValue>
+              <strong>Выпущен:</strong> {formatTafTimeForDisplay(tafData.issuanceTime)}
+            </WeatherValue>
+          </InfoSection>
+          <InfoSection>
+            <WeatherValue>
+              <strong>Действителен:</strong> {formatTafTimeForDisplay(tafData.validity.from)} — {formatTafTimeForDisplay(tafData.validity.to)}
+            </WeatherValue>
+          </InfoSection>
+          <InfoSection>
+            <WeatherValue>
+              <strong>Периодов прогноза:</strong> {tafData.forecast.length}
+            </WeatherValue>
+          </InfoSection>
         </div>
-      </div>
+      </TafHeader>
 
-      {/* Температура */}
-      {tafData.temperature && tafData.temperature.length > 0 && (
-        <div style={{ 
-          background: 'rgba(255, 107, 107, 0.1)',
-          border: '1px solid #ff6b6b',
-          borderRadius: '8px',
-          padding: '10px',
-          marginTop: '10px'
-        }}>
-          <strong>🌡️ Температура:</strong>
-          {tafData.temperature.map((temp, idx) => (
-            <div key={idx} style={{ marginLeft: '10px', fontSize: '0.9rem' }}>
-              {getTemperatureDescription(temp)}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Краткий обзор условий */}
-      <div style={{ 
-        background: 'rgba(26, 111, 196, 0.1)',
-        border: '1px solid #1a6fc4',
-        borderRadius: '8px',
-        padding: '15px',
-        marginBottom: '20px',
-        marginTop: '20px',
-      }}>
-        <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📊 Краткий обзор:</h4>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '10px',
-          color: '#e6f1ff',
-          fontSize: '0.9rem'
-        }}>
-          <div>💨 <strong>Ветер:</strong> {tafOverview.mainWind ? getWindDescription(tafOverview.mainWind) : 'Не указан'}</div>
-          <div>👁️ <strong>Видимость:</strong> {tafOverview.mainVisibility ? getVisibilityDescription(tafOverview.mainVisibility) : 'Не указана'}</div>
-          <div>☁️ <strong>{tafOverview.ceiling}</strong></div>
-          <div>⚠️ <strong>Опасные явления:</strong> {tafOverview.hasSignificantWeather ? 'Есть' : 'Нет'}</div>
-        </div>
+      {/* Исходный код TAF */}
+      <div style={{ marginBottom: '25px' }}>
+        <h4 style={{ color: '#64ffda', marginBottom: '10px' }}>📋 Исходный TAF:</h4>
+        <TafCode>{tafData.raw}</TafCode>
       </div>
 
       {/* Периоды прогноза */}
-      {tafData.forecast.map((period, index) => {
-        if (!period) return null;
-        
-        const changeInfo = getChangeTypeInfo(period.changeType, period.probability);
-        const isExpanded = expandedPeriods.has(index);
-        const isActive = index === activePeriodIndex;
-        const isFuture = index > (activePeriodIndex !== -1 ? activePeriodIndex : 0);
-        
-        return (
-          <TafPeriod key={index} isExpanded={isExpanded}>
-            <div 
-              className="period-header"
-              onClick={() => togglePeriod(index)}
-              style={{
-                borderLeft: isActive ? '4px solid #64ffda' : 
-                           isFuture ? '4px solid #ffd700' : '4px solid #1a6fc4'
-              }}
-            >
-              <div className="validity">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <strong style={{ fontSize: '1.1rem' }}>
-                    {formatValidity(period.validity.from, period.validity.to)}
-                  </strong>
-                  {isActive && (
-                    <span style={{
-                      background: '#64ffda',
-                      color: '#0a192f',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold'
-                    }}>
-                      🔴 АКТИВНО
-                    </span>
-                  )}
-                  {isFuture && (
-                    <span style={{
-                      background: '#ffd700',
-                      color: '#0a192f',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem'
-                    }}>
-                      ⏳ БУДУЩЕЕ
-                    </span>
-                  )}
-                </div>
-                
-                <ChangeIndicator type={period.changeType || 'MAIN'}>
-                  {changeInfo.icon} {changeInfo.name}
-                </ChangeIndicator>
-                
-                {period.probability && (
-                  <span style={{ 
-                    background: 'rgba(157, 78, 221, 0.3)',
-                    color: '#9d4edd',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem'
-                  }}>
-                    🎲 {period.probability}%
-                  </span>
-                )}
-              </div>
-              
-              <div className="weather-summary">
-                {getPeriodSummary(period)}
-              </div>
-            </div>
-
-            {isExpanded && (
-              <ForecastGroup>
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{ color: changeInfo.color, marginBottom: '15px' }}>
-                    {changeInfo.icon} {changeInfo.description}
-                  </h4>
-                  <div style={{ 
-                    color: '#8892b0', 
-                    fontSize: '0.9rem',
-                    lineHeight: '1.4'
-                  }}>
-                    <strong>Период:</strong> {formatDate(period.validity.from)} - {formatDate(period.validity.to)} UTC
-                    {period.probability && (
-                      <span style={{ marginLeft: '15px' }}>
-                        <strong>Вероятность:</strong> {period.probability}%
-                      </span>
-                    )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {tafData.forecast.map((period, index) => {
+          const changeInfo = getChangeTypeInfo(period.changeType, period.probability);
+          const hasDanger = !!(period.turbulence || period.icing || period.clouds?.some(c => c.type === 'CB'));
+          const isChangePeriod = !!period.changeType;
+          
+          return (
+            <PeriodCard key={index} $hasDanger={hasDanger}>
+              {/* Заголовок периода */}
+              <PeriodHeader>
+                <div className="period-main">
+                  <ChangeIndicator color={changeInfo.color}>
+                    {changeInfo.icon} {changeInfo.name}
+                    {period.probability && ` ${period.probability}%`}
+                  </ChangeIndicator>
+                  <div className="period-time">
+                    {formatTafTimeForDisplay(period.validity.from)} — {formatTafTimeForDisplay(period.validity.to)}
                   </div>
                 </div>
-
-                <WeatherTimeline>
-                  {/* Ветер */}
-                  {period.wind ? (
-                    <TimelineItem>
-                      <strong>🌬️ Ветер:</strong> 
-                      <div style={{ marginLeft: '10px', marginTop: '5px' }}>
-                        {getWindDescription(period.wind)}
-                      </div>
-                    </TimelineItem>
-                  ) : (
-                    <TimelineItem>
-                      <strong>🌬️ Ветер:</strong> 
-                      <span style={{ marginLeft: '10px', color: '#8892b0' }}>Не указан</span>
-                    </TimelineItem>
+                <div className="period-description">
+                  {changeInfo.description}
+                  {isChangePeriod && !hasForecastData(period) && (
+                    <span style={{ color: '#ffd700', marginLeft: '10px' }}>
+                      (Общие изменения)
+                    </span>
                   )}
+                </div>
+              </PeriodHeader>
 
-                  {/* Видимость */}
-                  {period.visibility ? (
-                    <TimelineItem>
-                      <strong>👁️ Видимость:</strong> 
-                      <div style={{ marginLeft: '10px', marginTop: '5px' }}>
-                        {getVisibilityDescription(period.visibility)}
-                      </div>
-                    </TimelineItem>
-                  ) : (
-                    <TimelineItem>
-                      <strong>👁️ Видимость:</strong> 
-                      <span style={{ marginLeft: '10px', color: '#8892b0' }}>Не указана</span>
-                    </TimelineItem>
-                  )}
+              {/* Основные данные */}
+              {renderForecastElements(period, period.changeType)}
 
-                  {/* Погодные явления */}
-                  {period.weather && period.weather.length > 0 ? (
-                    <TimelineItem>
-                      <strong>🌦️ Погодные явления:</strong>
-                      {period.weather.map((weather, idx) => (
-                        <div key={idx} style={{ 
-                          marginLeft: '10px', 
-                          marginTop: '5px',
-                          padding: '8px',
-                          background: 'rgba(26, 111, 196, 0.1)',
-                          borderRadius: '6px'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span>{getWeatherIcon(weather.phenomena[0])}</span>
-                            <span>{getWeatherDescription(weather)}</span>
-                          </div>
-                          <code style={{ 
-                            fontSize: '0.8rem', 
-                            color: '#64ffda',
-                            marginTop: '4px',
-                            display: 'block'
-                          }}>
-                            {weather.raw}
-                          </code>
-                        </div>
-                      ))}
-                    </TimelineItem>
-                  ) : (
-                    <TimelineItem>
-                      <strong>🌦️ Погодные явления:</strong>
-                      <span style={{ marginLeft: '10px', color: '#64ffda' }}>
-                        Нет значительных явлений
-                      </span>
-                    </TimelineItem>
-                  )}
+              {/* Опасные явления */}
+              {renderDangerElements(period, period.changeType)}
 
-                  {/* Облачность */}
-                  {period.clouds && period.clouds.length > 0 ? (
-                    <TimelineItem>
-                      <strong>☁️ Облачность:</strong>
-                      {period.clouds.map((cloud, idx) => (
-                        <div key={idx} style={{ 
-                          marginLeft: '10px', 
-                          marginTop: '5px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px'
-                        }}>
-                          <span style={{ 
-                            background: cloud.isCeiling ? 'rgba(255, 107, 107, 0.2)' : 
-                                      cloud.type === 'CB' ? 'rgba(255, 215, 0, 0.3)' :
-                                      'rgba(100, 255, 218, 0.2)',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '0.8rem',
-                            fontWeight: cloud.isCeiling ? 'bold' : 'normal',
-                            border: cloud.type === 'CB' ? '1px solid #ffd700' : 'none'
-                          }}>
-                            {cloud.coverage.toUpperCase()}{cloud.type ? `/${cloud.type}` : ''}
-                          </span>
-                          <span>{getCloudDescriptionWithHazards(cloud)}</span>
-                        </div>
-                      ))}
-                      
-                      {/* Показываем предупреждения для CB */}
-                      {getCbHazardsDescription(period.clouds).length > 0 && (
-                        <div style={{ 
-                          marginLeft: '10px',
-                          marginTop: '8px',
-                          padding: '8px',
-                          background: 'rgba(255, 215, 0, 0.1)',
-                          border: '1px solid #ffd700',
-                          borderRadius: '6px'
-                        }}>
-                          <strong style={{ color: '#ffd700' }}>⚠️ Опасные явления:</strong>
-                          {getCbHazardsDescription(period.clouds).map((hazard, idx) => (
-                            <div key={idx} style={{ fontSize: '0.8rem', marginTop: '2px' }}>
-                              • {hazard}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </TimelineItem>
-                  ) : (
-                    <TimelineItem>
-                      <strong>☁️ Облачность:</strong> 
-                      <span style={{ marginLeft: '10px', color: '#64ffda' }}>
-                        Нет значительной облачности
-                      </span>
-                    </TimelineItem>
-                  )}
-
-                  {/* Турбулентность */}
-                  {period.turbulence && (
-                    <TimelineItem>
-                      <strong>💨 Турбулентность:</strong>
-                      <div style={{ marginLeft: '10px', marginTop: '5px', color: '#ffd700' }}>
-                        ⚠️ {getTurbulenceDescription(period.turbulence)}
-                      </div>
-                    </TimelineItem>
-                  )}
-
-                  {/* Обледенение */}
-                  {period.icing && (
-                    <TimelineItem>
-                      <strong>🧊 Обледенение:</strong>
-                      <div style={{ marginLeft: '10px', marginTop: '5px', color: '#64ffda' }}>
-                        ❄️ {getIcingDescription(period.icing)}
-                      </div>
-                    </TimelineItem>
-                  )}
-
-                  {/* Температура периода */}
-                  {period.temperature && period.temperature.length > 0 && (
-                    <TimelineItem>
-                      <strong>🌡️ Температура:</strong>
-                      {period.temperature.map((temp, idx) => (
-                        <div key={idx} style={{ marginLeft: '10px', marginTop: '5px' }}>
-                          {getTemperatureDescription(temp)}
-                        </div>
-                      ))}
-                    </TimelineItem>
-                  )}
-                </WeatherTimeline>
-              </ForecastGroup>
-            )}
-          </TafPeriod>
-        );
-      })}
+              {/* Температура */}
+              {renderTemperature(period, period.changeType)}
+            </PeriodCard>
+          );
+        })}
+      </div>
     </TafContainer>
   );
 };

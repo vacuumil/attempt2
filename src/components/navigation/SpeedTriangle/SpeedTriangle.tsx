@@ -15,8 +15,8 @@ export const SpeedTriangle: React.FC = () => {
     tas: 200,
     trueCourse: 90,
     windSpeed: 20,
-    windDirection: 90, // Теперь 90° означает ветер с востока (метеорологическое)
-    useMagneticWind: true // По умолчанию используем метеорологический формат
+    windDirection: 90,
+    useMagneticWind: true
   });
 
   const [results, setResults] = useState<CalculationResults | null>(null);
@@ -38,7 +38,7 @@ export const SpeedTriangle: React.FC = () => {
       state.windSpeed,
       state.windDirection,
       state.trueCourse,
-      state.useMagneticWind // Передаем флаг типа ветра
+      state.useMagneticWind
     );
 
     const groundspeed = calculateGroundspeed(
@@ -73,21 +73,40 @@ export const SpeedTriangle: React.FC = () => {
         <p className="subtitle">Расчет угла сноса и путевой скорости</p>
       </div>
 
-      <div className="speed-triangle-grid">
-        <div className="control-section">
+      {/* КОМПАКТНАЯ СЕТКА */}
+      <div className="speed-triangle-compact-grid">
+        {/* ЛЕВАЯ КОЛОНКА - УПРАВЛЕНИЕ И РЕЗУЛЬТАТЫ */}
+        <div className="left-column">
           <ControlPanel
             state={state}
             onChange={handleStateChange}
-            onCalculate={handleCalculate}
-            onReset={handleReset}
             onPresetSelect={handlePresetSelect}
             wca={results?.wca || 0}
           />
           
           <ResultsPanel results={results} />
+          
+          {/* ИТОГИ РАСЧЕТА */}
+          {results && (
+            <div className="calculation-summary">
+              <h4>Итоги расчета</h4>
+              <p>
+                При воздушной скорости <strong>{state.tas} узлов</strong> и ветре 
+                <strong> {state.windSpeed} kt/{state.windDirection}°</strong>:
+              </p>
+              <p>
+                Для следования курсом <strong>{state.trueCourse}°</strong> необходимо 
+                установить курс <strong>{results.trueHeading.toFixed(1)}°</strong>.
+              </p>
+              <p>
+                Путевая скорость составит <strong>{results.groundspeed.toFixed(1)} узлов</strong>.
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="visualization-section">
+        {/* ПРАВАЯ КОЛОНКА - ДИАГРАММА И КНОПКИ */}
+        <div className="right-column">
           <VectorDiagram
             tas={state.tas}
             trueCourse={state.trueCourse}
@@ -97,10 +116,18 @@ export const SpeedTriangle: React.FC = () => {
             wca={results?.wca || 0}
             isCalculated={isCalculated}
           />
+          
+          {/* КНОПКИ УПРАВЛЕНИЯ ПОД ДИАГРАММОЙ */}
+          <div className="diagram-control-buttons">
+            <button onClick={handleCalculate} className="calculate-btn">
+              Рассчитать
+            </button>
+            <button onClick={handleReset} className="reset-btn">
+              Сброс
+            </button>
+          </div>
         </div>
       </div>
-
-      
     </div>
   );
 };

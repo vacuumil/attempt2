@@ -1,4 +1,3 @@
-// RouteVisualization.styles.ts
 import styled from 'styled-components';
 
 export const VisualizationContainer = styled.div`
@@ -6,7 +5,8 @@ export const VisualizationContainer = styled.div`
   background: rgba(10, 25, 47, 0.6);
   border: 1px solid rgba(26, 111, 196, 0.3);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.5rem; /* Вернули оригинальные отступы */
+  width: 100%;
 `;
 
 export const VisualizationHeader = styled.div`
@@ -16,11 +16,18 @@ export const VisualizationHeader = styled.div`
   margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
 `;
 
 export const VisualizationTitle = styled.h3`
   color: #64ffda;
   margin: 0;
+  font-size: 1.25rem; /* Вернули оригинальный размер */
 `;
 
 export const ControlsPanel = styled.div`
@@ -28,6 +35,11 @@ export const ControlsPanel = styled.div`
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    justify-content: center;
+  }
 `;
 
 export const ControlGroup = styled.div`
@@ -37,7 +49,7 @@ export const ControlGroup = styled.div`
   
   label {
     color: #e6f1ff;
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Вернули оригинальный размер */
     white-space: nowrap;
   }
 `;
@@ -50,6 +62,7 @@ export const Input = styled.input`
   color: #e6f1ff;
   width: 80px;
   text-align: center;
+  font-size: 1rem; /* Вернули оригинальный размер */
 
   &:focus {
     outline: none;
@@ -60,7 +73,7 @@ export const Input = styled.input`
 export const CanvasContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 400px; /* Вернули оригинальную высоту */
   background: rgba(17, 34, 64, 0.3);
   border-radius: 8px;
   overflow: hidden;
@@ -74,14 +87,14 @@ export const Legend = styled.div`
   padding: 1rem;
   background: rgba(26, 111, 196, 0.1);
   border-radius: 6px;
+  font-size: 0.9rem; /* Вернули оригинальный размер */
 `;
 
 export const LegendItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #8892b0;
+  font-size: 0.9rem; /* Вернули оригинальный размер */
 `;
 
 export const ColorSwatch = styled.div<{ color: string }>`

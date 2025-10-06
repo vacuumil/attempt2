@@ -23,7 +23,7 @@ export interface FlightPlanData {
 export interface RouteLeg {
   id: string;
   name: string;
-  magneticCourse: number; // МПУ
+  magneticCourse: number; // ЗМПУ
   distance: number; // Расстояние в км
 }
 
@@ -42,4 +42,10 @@ export interface TrainingRoute {
   totalDistance: number;
   legs: RouteLeg[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+}
+
+export interface TrainingRoutesPanelProps {
+  onRouteSelect: (routeCode: string) => void;
+  selectedRoute: string;
+  currentAirspeed: number;
 }

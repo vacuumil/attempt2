@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const TableContainer = styled.div`
   margin-top: 2rem;
+  width: 100%;
   overflow-x: auto;
   
   @media (max-width: 768px) {
@@ -11,19 +12,16 @@ export const TableContainer = styled.div`
 
 export const ControlPanel = styled.div`
   background: rgba(26, 111, 196, 0.1);
-  padding: 1.5rem;
+  padding: 1.5rem; /* Вернули оригинальные отступы */
   border-radius: 8px;
   margin-bottom: 1rem;
   border: 1px solid rgba(26, 111, 196, 0.3);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
 
   label {
     color: #e6f1ff;
     font-weight: 500;
     margin-right: 0.5rem;
+    font-size: 1rem; /* Вернули оригинальный размер */
   }
 `;
 
@@ -33,27 +31,23 @@ export const Table = styled.table`
   background: rgba(10, 25, 47, 0.6);
   border-radius: 8px;
   overflow: hidden;
-  min-width: 800px; // Минимальная ширина для скролла на мобильных
+  min-width: 800px; /* Вернули оригинальную ширину */
 
   @media (max-width: 768px) {
     font-size: 0.85rem;
-    min-width: 900px; // Увеличим для новых колонок
+    min-width: 900px;
   }
 `;
 
 export const TableHeader = styled.th`
   background: rgba(26, 111, 196, 0.3);
   color: #64ffda;
-  padding: 1rem;
+  padding: 1rem; /* Вернули оригинальные отступы */
   text-align: center;
   font-weight: 600;
   border: 1px solid rgba(100, 255, 218, 0.1);
   white-space: nowrap;
-
-  @media (max-width: 768px) {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.8rem;
-  }
+  font-size: 1rem; /* Вернули оригинальный размер */
 `;
 
 export const TableRow = styled.tr`
@@ -67,16 +61,12 @@ export const TableRow = styled.tr`
 `;
 
 export const TableCell = styled.td`
-  padding: 0.75rem;
+  padding: 0.75rem; /* Вернули оригинальные отступы */
   text-align: center;
   border: 1px solid rgba(100, 255, 218, 0.1);
   color: #e6f1ff;
   white-space: nowrap;
-
-  @media (max-width: 768px) {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.8rem;
-  }
+  font-size: 1rem; /* Вернули оригинальный размер */
 `;
 
 export const SummaryRow = styled(TableRow)`
@@ -85,19 +75,14 @@ export const SummaryRow = styled(TableRow)`
 `;
 
 export const Input = styled.input`
-  padding: 0.5rem;
+  padding: 0.5rem; /* Вернули оригинальные отступы */
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid #1a6fc4;
   border-radius: 4px;
   color: #e6f1ff;
   text-align: center;
-  width: 60px;
-
-  @media (max-width: 768px) {
-    width: 50px;
-    padding: 0.4rem;
-    font-size: 0.8rem;
-  }
+  width: 60px; /* Вернули оригинальную ширину */
+  font-size: 1rem; /* Вернули оригинальный размер */
 
   &:focus {
     outline: none;
@@ -107,14 +92,10 @@ export const Input = styled.input`
 
 export const TimeInput = styled(Input)`
   width: 70px;
-  
-  @media (max-width: 768px) {
-    width: 60px;
-  }
 `;
 
 export const AddButton = styled.button`
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.5rem; /* Вернули оригинальные отступы */
   background: linear-gradient(135deg, #1a6fc4 0%, #64ffda 100%);
   color: white;
   border: none;
@@ -122,11 +103,7 @@ export const AddButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
-
-  @media (max-width: 768px) {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-  }
+  font-size: 1rem; /* Вернули оригинальный размер */
 
   &:hover {
     transform: translateY(-2px);
@@ -135,25 +112,20 @@ export const AddButton = styled.button`
 `;
 
 export const RemoveButton = styled.button`
-  padding: 0.5rem;
+  padding: 0.5rem; /* Вернули оригинальные отступы */
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
   border: 1px solid #ff6b6b;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
-
-  @media (max-width: 768px) {
-    padding: 0.4rem;
-    font-size: 0.8rem;
-  }
+  font-size: 1rem; /* Вернули оригинальный размер */
 
   &:hover {
     background: rgba(255, 107, 107, 0.3);
   }
 `;
 
-// Новый компонент для мобильного предупреждения
 export const MobileWarning = styled.div`
   display: none;
   
@@ -167,7 +139,7 @@ export const MobileWarning = styled.div`
     text-align: center;
     color: #ffd700;
     font-size: 0.9rem;
-    
+
     strong {
       display: block;
       margin-bottom: 0.25rem;

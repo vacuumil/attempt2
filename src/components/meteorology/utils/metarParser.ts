@@ -69,6 +69,11 @@ export interface ParsedMetar {
     isGreaterThan?: boolean;
     isLessThan?: boolean;
     metersValue?: number;
+    variations?: Array<{
+      value: number;
+      direction: string;
+      description: string;
+    }>;
   };
   weatherConditions: string[];
   clouds: Array<{
@@ -105,6 +110,32 @@ export interface ParsedMetar {
 }
 
 /**
+ * Описание направлений для видимости
+ */
+const getDirectionDescription = (direction: string): string => {
+  const directions: Record<string, string> = {
+    'N': 'северное',
+    'S': 'южное', 
+    'E': 'восточное',
+    'W': 'западное',
+    'NE': 'северо-восточное',
+    'NW': 'северо-западное',
+    'SE': 'юго-восточное',
+    'SW': 'юго-западное',
+    'NNE': 'северо-северо-восточное',
+    'NNW': 'северо-северо-западное',
+    'SSE': 'юго-юго-восточное',
+    'SSW': 'юго-юго-западное',
+    'ENE': 'восточно-северо-восточное',
+    'ESE': 'восточно-юго-восточное',
+    'WNW': 'западно-северо-западное',
+    'WSW': 'западно-юго-западное'
+  };
+  
+  return directions[direction] || direction;
+};
+
+/**
  * Расширенная функция парсинга примечаний
  */
 const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
@@ -115,7 +146,53 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
     
     const remarkUpper = remark.toUpperCase();
     
-    // 1. Температурные примечания
+    // 1. QBB - высота основания облаков (Cloud Base Height)
+    if (remarkUpper.startsWith('QBB')) {
+      const qbbMatch = remarkUpper.match(/^QBB(\d{3})$/);
+      if (qbbMatch) {
+        const heightFeet = parseInt(qbbMatch[1]) * 100; // QBBxxx = xxx × 100 ft
+        const heightMeters = Math.round(heightFeet * 0.3048); // преобразование в метры (1 ft = 0.3048 m)
+        
+        const description = `Высота основания облаков: ${heightFeet} ft (≈${heightMeters} м)`;
+        
+        remarks.push({
+          code: remark,
+          description,
+          type: 'system',
+          details: { 
+            type: 'cloud_base', 
+            value: remarkUpper,
+            heightFeet: heightFeet,
+            heightMeters: heightMeters
+          }
+        });
+        continue;
+      }
+    }
+    
+    // 2. Дополнительные системные примечания
+    const additionalSystemRemarks: Record<string, string> = {
+      'QFE': 'Давление на уровне аэродрома',
+      'QNH': 'Давление на уровне моря',
+      'BLU': 'Синий цвет (хорошие условия)',
+      'WHT': 'Белый цвет (плохие условия)',
+      'GRN': 'Зеленый цвет',
+      'YLO': 'Желтый цвет',
+      'RED': 'Красный цвет',
+      'BLACK': 'Черный цвет',
+      'AMB': 'Амбиентные условия'
+    };
+    
+    if (additionalSystemRemarks[remarkUpper]) {
+      remarks.push({
+        code: remark,
+        description: additionalSystemRemarks[remarkUpper],
+        type: 'system'
+      });
+      continue;
+    }
+    
+    // 3. Температурные примечания
     if (remarkUpper.startsWith('T')) {
       const tempMatch = remarkUpper.match(/^T(\d{4})(\d{4})$/);
       if (tempMatch) {
@@ -133,7 +210,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       }
     }
     
-    // 2. Давление на уровне моря
+    // 4. Давление на уровне моря
     if (remarkUpper.startsWith('SLP')) {
       const pressureMatch = remarkUpper.match(/^SLP(\d{3})$/);
       if (pressureMatch) {
@@ -153,7 +230,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       }
     }
     
-    // 3. Начало/окончание погодных явлений
+    // 5. Начало/окончание погодных явлений
     const weatherEventMatch = remarkUpper.match(/^([A-Z]{2})([BE])$/);
     if (weatherEventMatch) {
       const [, phenomenon, timing] = weatherEventMatch;
@@ -169,7 +246,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       continue;
     }
     
-    // 4. Временные примечания
+    // 6. Временные примечания
     const timeMatch = remarkUpper.match(/^(\d{4})$/);
     if (timeMatch) {
       const time = timeMatch[1];
@@ -184,7 +261,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       continue;
     }
     
-    // 5. Изменяющийся ветер
+    // 7. Изменяющийся ветер
     if (remarkUpper.includes('V') && remarkUpper.match(/^\d{3}V\d{3}$/)) {
       const [fromStr, toStr] = remarkUpper.split('V');
       const details: WindDetails = { 
@@ -201,7 +278,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       continue;
     }
     
-    // 6. Системные примечания
+    // 8. Системные примечания
     const systemRemark = getSystemRemarkDescription(remarkUpper);
     if (systemRemark) {
       remarks.push({
@@ -212,7 +289,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       continue;
     }
     
-    // 7. Примечания по ВПП
+    // 9. Примечания по ВПП
     const runwayRemark = getRunwayRemarkDescription(remarkUpper);
     if (runwayRemark) {
       remarks.push({
@@ -224,7 +301,7 @@ const parseRemarks = (remarksParts: string[]): ParsedMetar['remarks'] => {
       continue;
     }
     
-    // 8. Общие примечания
+    // 10. Общие примечания
     const generalRemark = getGeneralRemarkDescription(remarkUpper);
     remarks.push({
       code: remark,
@@ -542,7 +619,7 @@ export const parseMetar = (metarString: string): ParsedMetar => {
     }
   }
 
-  // 5. Видимость - УЛУЧШЕННАЯ обработка для американских форматов
+  // 5. Видимость - УЛУЧШЕННАЯ обработка для направленной видимости
   if (index < parts.length && !inRemarks) {
     const visPart = parts[index];
     
@@ -555,34 +632,50 @@ export const parseMetar = (metarString: string): ParsedMetar => {
       parsed.visibility.value = 10000;
       parsed.visibility.unit = 'm';
       index++;
-    } 
-
-    // Видимость в статутных милях (например, 10SM)
-    else if (visPart.endsWith('SM')) {
+    } else if (visPart.endsWith('SM')) {
+      // Видимость в статутных милях
       const smMatch = visPart.match(/^(\d+)(?:\s*\/\s*\d+)?SM$/);
       if (smMatch) {
         const miles = parseInt(smMatch[1]);
-        console.log('🔍 Парсинг видимости SM:', { original: visPart, miles, meters: Math.round(miles * 1609.34) });
-        
-        // Сохраняем оригинальное значение в милях
         parsed.visibility.value = miles;
         parsed.visibility.unit = 'SM';
         parsed.visibility.metersValue = Math.round(miles * 1609.34);
         index++;
       } else {
-        console.log('⚠️ Не удалось распарсить видимость SM:', visPart);
         index++;
       }
-    }
-
-    // Видимость в метрах (4 цифры)
-    else if (/^\d{4}$/.test(visPart)) {
+    } else if (/^\d{4}$/.test(visPart)) {
+      // Основная видимость в метрах
       parsed.visibility.value = parseInt(visPart);
       parsed.visibility.unit = 'm';
       index++;
-    } 
-    // Видимость с префиксами M (меньше) или P (больше)
-    else if (visPart.startsWith('M') && /^M\d{4}$/.test(visPart)) {
+      
+      // Проверяем следующие части на видимость с направлением
+      while (index < parts.length && !inRemarks) {
+        const dirVisPart = parts[index];
+        
+        // Видимость с направлением (например: 1800NW)
+        const dirVisMatch = dirVisPart.match(/^(\d{4})([NSEW]{1,2})$/);
+        if (dirVisMatch) {
+          const dirValue = parseInt(dirVisMatch[1]);
+          const direction = dirVisMatch[2];
+          
+          if (!parsed.visibility.variations) {
+            parsed.visibility.variations = [];
+          }
+          
+          parsed.visibility.variations.push({
+            value: dirValue,
+            direction: direction,
+            description: getDirectionDescription(direction)
+          });
+          index++;
+        } else {
+          // Если следующая часть не видимость с направлением, выходим
+          break;
+        }
+      }
+    } else if (visPart.startsWith('M') && /^M\d{4}$/.test(visPart)) {
       parsed.visibility.value = parseInt(visPart.slice(1));
       parsed.visibility.unit = 'm';
       parsed.visibility.isLessThan = true;
@@ -592,18 +685,14 @@ export const parseMetar = (metarString: string): ParsedMetar => {
       parsed.visibility.unit = 'm';
       parsed.visibility.isGreaterThan = true;
       index++;
-    } 
-    // Видимость с направлением
-    else if (/^\d{4}[NSEW]$/.test(visPart)) {
+    } else if (/^\d{4}[NSEW]$/.test(visPart)) {
       parsed.visibility.value = parseInt(visPart.slice(0, 4));
       parsed.visibility.unit = 'm';
       index++;
     } else if (visPart.includes('/')) {
-      // Дробная видимость в милях (например, 1 1/2SM)
-      // Пропускаем для упрощения, но можно обработать позже
+      // Дробная видимость в милях
       index++;
     } else {
-      // Если не распознали видимость, переходим дальше
       index++;
     }
   }

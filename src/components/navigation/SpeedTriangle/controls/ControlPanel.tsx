@@ -7,8 +7,6 @@ import type { SpeedTriangleState } from '../types/types';
 interface ControlPanelProps {
   state: SpeedTriangleState;
   onChange: (field: keyof SpeedTriangleState, value: number) => void;
-  onCalculate: () => void;
-  onReset: () => void;
   onPresetSelect: (preset: Partial<SpeedTriangleState>) => void;
   wca: number;
 }
@@ -16,8 +14,6 @@ interface ControlPanelProps {
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   state,
   onChange,
-  onCalculate,
-  onReset,
   onPresetSelect,
   wca
 }) => {
@@ -73,15 +69,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         onSelectPreset={onPresetSelect}
         currentState={state}
       />
-
-      <div className="control-buttons">
-        <button onClick={onCalculate} className="calculate-btn">
-          Рассчитать
-        </button>
-        <button onClick={onReset} className="reset-btn">
-          Сброс
-        </button>
-      </div>
     </div>
   );
 };

@@ -40,18 +40,18 @@ export const VectorDiagram: React.FC<VectorDiagramProps> = ({
   const scale = 150 / maxMagnitude;
 
   const calculateVectorComponents = useCallback(() => {
-  // Преобразуем метеорологическое направление в навигационное для отображения
-  const navWindDirection = meteoToNavDirection(windDirection);
-  const courseRad = toRad(trueCourse);
-  const windRad = toRad(navWindDirection);
+    // Преобразуем метеорологическое направление в навигационное для отображения
+    const navWindDirection = meteoToNavDirection(windDirection);
+    const courseRad = toRad(trueCourse);
+    const windRad = toRad(navWindDirection);
 
-  return {
-    tasX: tas * Math.sin(courseRad) * scale,
-    tasY: tas * Math.cos(courseRad) * scale,
-    windX: windSpeed * Math.sin(windRad) * scale,
-    windY: windSpeed * Math.cos(windRad) * scale,
-  };
-}, [tas, trueCourse, windSpeed, windDirection, scale]);
+    return {
+      tasX: tas * Math.sin(courseRad) * scale,
+      tasY: tas * Math.cos(courseRad) * scale,
+      windX: windSpeed * Math.sin(windRad) * scale,
+      windY: windSpeed * Math.cos(windRad) * scale,
+    };
+  }, [tas, trueCourse, windSpeed, windDirection, scale]);
 
   const { tasX, tasY, windX, windY } = calculateVectorComponents();
   const gsX = tasX + windX;
@@ -283,6 +283,7 @@ export const VectorDiagram: React.FC<VectorDiagramProps> = ({
   if (!isCalculated) {
     return (
       <div className="vector-diagram">
+        <h3>Векторная диаграмма</h3>
         <div className="diagram-placeholder">
           Введите параметры и нажмите "Рассчитать" для отображения диаграммы
         </div>
