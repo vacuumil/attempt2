@@ -2,6 +2,11 @@ import styled from 'styled-components';
 
 export const TableContainer = styled.div`
   margin-top: 2rem;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    margin-top: 1rem;
+  }
 `;
 
 export const ControlPanel = styled.div`
@@ -10,6 +15,10 @@ export const ControlPanel = styled.div`
   border-radius: 8px;
   margin-bottom: 1rem;
   border: 1px solid rgba(26, 111, 196, 0.3);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 
   label {
     color: #e6f1ff;
@@ -24,6 +33,12 @@ export const Table = styled.table`
   background: rgba(10, 25, 47, 0.6);
   border-radius: 8px;
   overflow: hidden;
+  min-width: 800px; // Минимальная ширина для скролла на мобильных
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+    min-width: 900px; // Увеличим для новых колонок
+  }
 `;
 
 export const TableHeader = styled.th`
@@ -33,6 +48,12 @@ export const TableHeader = styled.th`
   text-align: center;
   font-weight: 600;
   border: 1px solid rgba(100, 255, 218, 0.1);
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
 `;
 
 export const TableRow = styled.tr`
@@ -50,6 +71,12 @@ export const TableCell = styled.td`
   text-align: center;
   border: 1px solid rgba(100, 255, 218, 0.1);
   color: #e6f1ff;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
 `;
 
 export const SummaryRow = styled(TableRow)`
@@ -64,10 +91,25 @@ export const Input = styled.input`
   border-radius: 4px;
   color: #e6f1ff;
   text-align: center;
+  width: 60px;
+
+  @media (max-width: 768px) {
+    width: 50px;
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
 
   &:focus {
     outline: none;
     border-color: #64ffda;
+  }
+`;
+
+export const TimeInput = styled(Input)`
+  width: 70px;
+  
+  @media (max-width: 768px) {
+    width: 60px;
   }
 `;
 
@@ -80,6 +122,11 @@ export const AddButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
+
+  @media (max-width: 768px) {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -96,7 +143,34 @@ export const RemoveButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
 
+  @media (max-width: 768px) {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+
   &:hover {
     background: rgba(255, 107, 107, 0.3);
+  }
+`;
+
+// Новый компонент для мобильного предупреждения
+export const MobileWarning = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #ffd700;
+    font-size: 0.9rem;
+    
+    strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
   }
 `;

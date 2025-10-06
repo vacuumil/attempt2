@@ -92,16 +92,16 @@ export const Footer: React.FC = () => {
           <FooterSection>
             <FooterTitle>Контакты</FooterTitle>
             <ContactInfo>
-              <div>📧 support@aerotrainer.ru</div>
+              <div>📧 скоробудет@aerotrainer.ru</div>
               <div>📞 +7 (495) 123-45-67</div>
-              <div>📍 Москва, Ленинградский пр-т, 37</div>
+              <div>📍 Ульяновск, Можайского, 8/8</div>
             </ContactInfo>
           </FooterSection>
         </FooterGrid>
         
         <FooterBottom>
           <Copyright>
-            © 2025 AeroTrainer. Все права защищены.
+            © 2025 AeroTrainer. Все права защищены кем-то.
           </Copyright>
           <FooterLinks style={{ flexDirection: 'row', gap: '2rem' }}>
             <FooterLink 

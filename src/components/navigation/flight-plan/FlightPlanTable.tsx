@@ -9,7 +9,8 @@ import {
   AddButton,
   RemoveButton,
   SummaryRow,
-  ControlPanel
+  ControlPanel,
+  MobileWarning
 } from './FlightPlanTable.styles';
 import type { RouteLeg, CalculatedLeg } from './types';
 import { calculateRoute } from './routeCalculator';
@@ -20,6 +21,7 @@ interface FlightPlanTableProps {
   trueAirspeed: number;
   windDirection: number;
   windSpeed: number;
+  takeoffTime?: string;
 }
 
 export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
@@ -27,54 +29,82 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
   onLegsChange,
   trueAirspeed,
   windDirection,
-  windSpeed
+  windSpeed,
+  takeoffTime = '08:00'
 }) => {
   const calculatedLegs: CalculatedLeg[] = calculateRoute(legs, trueAirspeed, windDirection, windSpeed);
 
-  const handleLegChange = (index: number, field: keyof RouteLeg, value: string | number) => {
+  // Расчет времени пролета ППМ
+  const calculatePassTimes = (): string[] => {
+    if (!takeoffTime || calculatedLegs.length === 0) return [];
+
+    const [startHours, startMinutes] = takeoffTime.split(':').map(Number);
+    let totalMinutes = startHours * 60 + startMinutes;
+    const passTimes: string[] = ['-']; // Взлет
+
+    for (let i = 1; i < calculatedLegs.length; i++) {
+      totalMinutes += calculatedLegs[i].legTime;
+      const hours = Math.floor(totalMinutes / 60) % 24;
+      const minutes = totalMinutes % 60;
+      passTimes.push(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
+    }
+
+    return passTimes;
+  };
+
+  const passTimes = calculatePassTimes();
+
+  // Обработчик изменения МПУ с ограничением 0-359
+  const handleMagneticCourseChange = (index: number, value: number) => {
+    let correctedValue = value;
+    
+    // Ограничиваем значение от 0 до 359
+    if (correctedValue < 0) correctedValue = 0;
+    if (correctedValue > 359) correctedValue = 359;
+    
+    // Если значение NaN, устанавливаем 0
+    if (isNaN(correctedValue)) correctedValue = 0;
+    
     const newLegs = [...legs];
-    newLegs[index] = { ...newLegs[index], [field]: value };
+    newLegs[index] = { ...newLegs[index], magneticCourse: correctedValue };
+    onLegsChange(newLegs);
+  };
+
+  const handleDistanceChange = (index: number, value: number) => {
+    const newLegs = [...legs];
+    newLegs[index] = { ...newLegs[index], distance: Math.max(0, value) };
     onLegsChange(newLegs);
   };
 
   const addLeg = () => {
-    // Находим индекс посадки (последний элемент)
     const landingIndex = legs.length - 1;
-    
-    // Создаем новый ППМ
     const newLeg: RouteLeg = {
       id: Date.now().toString(),
-      name: `ППМ${legs.length - 1}`, // -1 потому что не считаем Взлет и Посадку
+      name: `ППМ${legs.length - 1}`,
       magneticCourse: 0,
       distance: 0
     };
     
-    // Вставляем новый ППМ перед посадкой
     const newLegs = [...legs];
     newLegs.splice(landingIndex, 0, newLeg);
     
-    // Обновляем названия всех ППМ
     const updatedLegs = newLegs.map((leg, index) => {
-      if (index === 0) return { ...leg, name: 'Взлет' }; // Первый - всегда Взлет
-      if (index === newLegs.length - 1) return { ...leg, name: 'Посадка' }; // Последний - всегда Посадка
-      return { ...leg, name: `ППМ${index}` }; // Остальные - ППМ1, ППМ2...
+      if (index === 0) return { ...leg, name: 'Взлет' };
+      if (index === newLegs.length - 1) return { ...leg, name: 'Посадка' };
+      return { ...leg, name: `ППМ${index}` };
     });
     
     onLegsChange(updatedLegs);
   };
 
   const removeLeg = (index: number) => {
-    // Нельзя удалить Взлет и Посадку, только ППМ между ними
     if (index > 0 && index < legs.length - 1) {
       const newLegs = legs.filter((_, i) => i !== index);
-      
-      // Обновляем названия оставшихся ППМ
       const updatedLegs = newLegs.map((leg, i) => {
         if (i === 0) return { ...leg, name: 'Взлет' };
         if (i === newLegs.length - 1) return { ...leg, name: 'Посадка' };
         return { ...leg, name: `ППМ${i}` };
       });
-      
       onLegsChange(updatedLegs);
     }
   };
@@ -82,26 +112,32 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
   const totalDistance = calculatedLegs.reduce((sum, leg) => sum + leg.distance, 0);
   const totalTime = calculatedLegs.reduce((sum, leg) => sum + leg.legTime, 0);
 
-  // Определяем цвет для названия пункта
   const getPointColor = (index: number) => {
-    if (index === 0) return '#64ffda'; // Взлет - бирюзовый
-    if (index === legs.length - 1) return '#ff6b6b'; // Посадка - красный
-    return '#e6f1ff'; // ППМ - белый
+    if (index === 0) return '#64ffda';
+    if (index === legs.length - 1) return '#ff6b6b';
+    return '#e6f1ff';
   };
 
-  // Определяем можно ли удалить пункт
   const canRemovePoint = (index: number) => {
-    return index > 0 && index < legs.length - 1; // Можно удалять только ППМ
+    return index > 0 && index < legs.length - 1;
   };
 
   return (
     <TableContainer>
+      <MobileWarning>
+        <strong>ℹ️ Для удобства просмотра на мобильных устройствах</strong>
+        Используйте горизонтальную прокрутку таблицы
+      </MobileWarning>
+
       <ControlPanel>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div>
             <label>Количество ППМ: {Math.max(0, legs.length - 2)}</label>
           </div>
           <AddButton onClick={addLeg}>+ Добавить ППМ</AddButton>
+          <div style={{ fontSize: '0.9rem', color: '#8892b0' }}>
+            Время взлета: <strong>{takeoffTime}</strong>
+          </div>
         </div>
       </ControlPanel>
 
@@ -109,13 +145,14 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
         <thead>
           <TableRow>
             <TableHeader>Маршрут</TableHeader>
-            <TableHeader>МПУ</TableHeader>
+            <TableHeader>ЗМПУ</TableHeader>
             <TableHeader>УС</TableHeader>
-            <TableHeader>МК</TableHeader>
+            <TableHeader>МКр</TableHeader>
             <TableHeader>V</TableHeader>
             <TableHeader>W</TableHeader>
             <TableHeader>S</TableHeader>
             <TableHeader>t</TableHeader>
+            <TableHeader>Время пролета</TableHeader>
             <TableHeader>Действия</TableHeader>
           </TableRow>
         </thead>
@@ -134,10 +171,16 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
                 <Input
                   type="number"
                   min="0"
-                  max="360"
+                  max="359"
                   value={leg.magneticCourse}
-                  onChange={(e) => handleLegChange(index, 'magneticCourse', Number(e.target.value))}
-                  style={{ width: '60px' }}
+                  onChange={(e) => handleMagneticCourseChange(index, Number(e.target.value))}
+                  onBlur={(e) => {
+                    let value = Number(e.target.value);
+                    if (value < 0) value = 0;
+                    if (value > 359) value = 359;
+                    if (isNaN(value)) value = 0;
+                    handleMagneticCourseChange(index, value);
+                  }}
                 />°
               </TableCell>
               <TableCell style={{ 
@@ -158,12 +201,23 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
                   type="number"
                   min="0"
                   value={leg.distance}
-                  onChange={(e) => handleLegChange(index, 'distance', Number(e.target.value))}
-                  style={{ width: '60px' }}
+                  onChange={(e) => handleDistanceChange(index, Number(e.target.value))}
+                  onBlur={(e) => {
+                    let value = Number(e.target.value);
+                    if (value < 0) value = 0;
+                    if (isNaN(value)) value = 0;
+                    handleDistanceChange(index, value);
+                  }}
                 /> км
               </TableCell>
               <TableCell style={{ fontWeight: 'bold' }}>
                 {calculatedLegs[index]?.legTime.toFixed(0)} мин
+              </TableCell>
+              <TableCell style={{ 
+                fontWeight: 'bold',
+                color: index === 0 ? '#64ffda' : index === legs.length - 1 ? '#ff6b6b' : '#e6f1ff'
+              }}>
+                {passTimes[index] || '-'}
               </TableCell>
               <TableCell>
                 {canRemovePoint(index) && (
@@ -187,6 +241,7 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
               {totalTime.toFixed(0)} мин
             </TableCell>
             <TableCell></TableCell>
+            <TableCell></TableCell>
           </SummaryRow>
         </tfoot>
       </Table>
@@ -197,19 +252,12 @@ export const FlightPlanTable: React.FC<FlightPlanTableProps> = ({
         padding: '1rem',
         background: 'rgba(100, 255, 218, 0.05)',
         borderRadius: '6px',
-        border: '1px solid rgba(100, 255, 218, 0.2)',
-        textAlign: 'center',
+        border: '1px solid rgba(100, 255, 218, 0.1)',
+        fontSize: '0.9rem',
         color: '#8892b0',
-        fontSize: '0.9rem'
+        textAlign: 'center'
       }}>
-        <strong>🌬️ Параметры ветра для всего маршрута:</strong> 
-        Направление: {windDirection}° (метеорологический - откуда дует), Скорость: {windSpeed} км/ч
-        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-          <strong>💡 Структура маршрута:</strong> 
-          <span style={{ color: '#64ffda' }}> Взлет</span> → 
-          <span style={{ color: '#e6f1ff' }}> ППМ</span> → 
-          <span style={{ color: '#ff6b6b' }}> Посадка</span>
-        </div>
+        <strong>Метеоусловия:</strong> Ветер {windDirection}° / {windSpeed} км/ч
       </div>
     </TableContainer>
   );

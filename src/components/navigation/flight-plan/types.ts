@@ -19,3 +19,27 @@ export interface FlightPlanData {
   windDirection: number;  // Направление ветра (постоянное для всего маршрута)
   windSpeed: number;      // Скорость ветра (постоянная для всего маршрута)
 }
+
+export interface RouteLeg {
+  id: string;
+  name: string;
+  magneticCourse: number; // МПУ
+  distance: number; // Расстояние в км
+}
+
+export interface CalculatedLeg extends RouteLeg {
+  driftAngle: number; // УС
+  magneticHeading: number; // МК
+  groundSpeed: number; // W
+  legTime: number; // Время участка в минутах
+}
+
+export interface TrainingRoute {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  totalDistance: number;
+  legs: RouteLeg[];
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+}
