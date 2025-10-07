@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { VORReceiver } from '../VORReceiver/VORReceiver';
 import { NavigationMap } from '../NavigationMap/NavigationMap';
 import { CDINeedle } from '../VORReceiver/CDINeedle';
-import { TOFROMIndicator } from '../VORReceiver/TOFROMIndicator';
 import { useVOR } from '../../../../hooks/useVOR';
 import type { VORStation } from '../../../../hooks/useVOR';
 import './VorSimulator.css';
@@ -104,11 +103,6 @@ export const VorSimulator: React.FC = () => {
             <CDINeedle deflection={cdiDeflection} />
             
             <div className="cdi-info-grid">
-              <div className="cdi-tofrom-container">
-                <span className="tofrom-label">Индикатор:</span>
-                <TOFROMIndicator indicator={toFromIndicator} />
-              </div>
-              
               <div className="cdi-data-display">
                 <div className="cdi-data-item">
                   <span className="cdi-data-label">Статус:</span>

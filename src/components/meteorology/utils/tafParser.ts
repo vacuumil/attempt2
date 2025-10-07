@@ -67,6 +67,7 @@ export interface TafForecast {
   turbulence?: TurbulenceInfo;
   icing?: IcingInfo;
   temperature?: TemperatureInfo[];
+  verticalVisibility?: TafCloud;
   raw: string;
 }
 
@@ -154,6 +155,28 @@ export const parseValidityPeriod = (validityString: string): { from: string; to:
 };
 
 /**
+ * Улучшенный поиск и парсинг температур в TAF
+ */
+const findAndParseTemperatures = (parts: string[]): TemperatureInfo[] => {
+  const temperatures: TemperatureInfo[] = [];
+  
+  parts.forEach((part, index) => {
+    if (isTemperatureCode(part)) {
+      console.log(`🌡️ Найдена температура [${index}]:`, part);
+      const temp = parseTemperature(part);
+      if (temp) {
+        console.log(`✅ Успешно распарсена температура:`, temp);
+        temperatures.push(temp);
+      } else {
+        console.log(`❌ Не удалось распарсить температуру:`, part);
+      }
+    }
+  });
+  
+  return temperatures;
+};
+
+/**
  * Вспомогательные функции для проверки типов кодов
  */
 const isWindCode = (code: string): boolean => {
@@ -187,6 +210,129 @@ const isCloudCode = (code: string): boolean => {
          code === 'NSC' || code === 'SKC' || code === 'CLR' || code === 'NCD';
 };
 
+// ДОБАВЬТЕ функцию для проверки вертикальной видимости:
+const isVerticalVisibilityCode = (code: string): boolean => {
+  return code.startsWith('VV');
+};
+
+// НОВАЯ ФУНКЦИЯ: Проверка на температуру
+const isTemperatureCode = (code: string): boolean => {
+  // Расширяем список для поддержки всех форматов температур
+  return /^(TX|TM|TN)(M?-?\d{2}|\/\/)\/\d{4}Z/.test(code) || 
+         /^(TX|TM|TN)M?\d{2}\/\d{4}Z/.test(code);
+};
+
+// НОВАЯ ФУНКЦИЯ: Парсинг температуры
+const parseTemperature = (code: string): TemperatureInfo | null => {
+  console.log('🌡️ Парсинг температуры:', code);
+  
+  // Основной формат: TX15/8812Z, TM02/8883Z, TN-02/1212Z
+  const mainFormat = code.match(/^(TX|TM|TN)(M?)(-?\d{2}|\/\/)\/(\d{2})(\d{2})Z$/);
+  if (mainFormat) {
+    const typeChar = mainFormat[1]; // TX, TM или TN
+    const hasMinusM = mainFormat[2] === 'M'; // M означает минус
+    const tempValue = mainFormat[3]; // числовое значение или //
+    const day = mainFormat[4];
+    const hour = mainFormat[5];
+    
+    // Определяем тип температуры
+    let type: 'max' | 'min';
+    if (typeChar === 'TX') {
+      type = 'max';
+    } else if (typeChar === 'TM' || typeChar === 'TN') {
+      type = 'min';
+    } else {
+      console.log('❌ Неизвестный тип температуры:', typeChar);
+      return null;
+    }
+    
+    // Обработка случаев, когда температура не указана (//)
+    if (tempValue === '//') {
+      console.log('❌ Температура не указана');
+      return null;
+    }
+    
+    let value: number;
+    
+    // Обработка явного минуса (TN-02)
+    if (tempValue.startsWith('-')) {
+      value = parseInt(tempValue);
+      console.log(`🔢 Явно отрицательная температура: ${tempValue} -> ${value}°C`);
+    }
+    // Обработка M как минуса (TMM02)
+    else if (hasMinusM) {
+      value = -parseInt(tempValue);
+      console.log(`🔢 Отрицательная температура с M: ${tempValue} -> ${value}°C`);
+    }
+    // Обработка значений > 50 как отрицательных по старой системе
+    else if (parseInt(tempValue) > 50) {
+      value = -(parseInt(tempValue) - 80);
+      console.log(`🔢 Конвертирована температура >50: ${tempValue} -> ${value}°C`);
+    }
+    // Положительная температура
+    else {
+      value = parseInt(tempValue);
+      console.log(`🔢 Положительная температура: ${tempValue} -> ${value}°C`);
+    }
+    
+    const time = day + hour + '00';
+    
+    console.log(`✅ Распарсена температура: ${type} ${value}°C в ${time}`);
+    
+    return {
+      type,
+      value,
+      time
+    };
+  }
+  
+  // Альтернативный формат для различных вариаций
+  const altFormats = [
+    /^(TX|TM|TN)M?(\d{2})\/(\d{2})(\d{2})Z$/, // TX15/1212Z, TMM02/1212Z
+    /^(TX|TM|TN)-(\d{2})\/(\d{2})(\d{2})Z$/,  // TX-02/1212Z
+  ];
+  
+  for (const format of altFormats) {
+    const match = code.match(format);
+    if (match) {
+      const typeChar = match[1];
+      const tempNum = match[2];
+      const day = match[3];
+      const hour = match[4];
+      
+      let type: 'max' | 'min';
+      if (typeChar === 'TX') {
+        type = 'max';
+      } else {
+        type = 'min';
+      }
+      
+      let value = parseInt(tempNum);
+      
+      // Если в формате есть M или -, делаем отрицательной
+      if (code.includes('M' + tempNum) || code.includes('-' + tempNum)) {
+        value = -value;
+      }
+      // Старая система кодирования отрицательных температур
+      else if (value > 50) {
+        value = -(value - 80);
+      }
+      
+      const time = day + hour + '00';
+      
+      console.log(`✅ Распарсена температура (альтернативный формат): ${type} ${value}°C в ${time}`);
+      
+      return {
+        type,
+        value,
+        time
+      };
+    }
+  }
+  
+  console.log(`❌ Не удалось распарсить температуру: ${code}`);
+  return null;
+};
 
 /**
  * Улучшенный парсер TAF
@@ -271,8 +417,48 @@ const normalizeTafString = (tafString: string): string => {
   return normalized;
 };
 
+const debugTemperatures = (parts: string[]) => {
+  console.log('🔍 Детальный поиск температур в TAF:', parts);
+  let foundCount = 0;
+  
+  parts.forEach((part, index) => {
+    if (isTemperatureCode(part)) {
+      foundCount++;
+      console.log(`🌡️ [${index}] Найдена температура:`, part);
+      const temp = parseTemperature(part);
+      if (temp) {
+        console.log(`✅ Успешно распарсена:`, temp);
+      } else {
+        console.log(`❌ Ошибка парсинга:`, part);
+        // Детальный анализ почему не парсится
+        analyzeTemperatureFormat(part);
+      }
+    }
+  });
+  
+  console.log(`📊 Всего найдено температур в TAF: ${foundCount}`);
+  return foundCount;
+};
+
+
+const analyzeTemperatureFormat = (code: string) => {
+  console.log('🔍 Анализ формата температуры:', code);
+  
+  // Тестируем различные регулярные выражения
+  const patterns = [
+    /^(TX|TM|TN)(M?)(-?\d{2}|\/\/)\/(\d{2})(\d{2})Z$/,
+    /^(TX|TM|TN)M?(\d{2})\/(\d{2})(\d{2})Z$/,
+    /^(TX|TM|TN)-(\d{2})\/(\d{2})(\d{2})Z$/,
+  ];
+  
+  patterns.forEach((pattern, i) => {
+    const match = code.match(pattern);
+    console.log(`🔍 Паттерн ${i}:`, pattern, '->', match);
+  });
+};
+
 /**
- * Универсальный парсер TAF - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ FM
+ * Универсальный парсер TAF - ИСПРАВЛЕННАЯ ВЕРСИЯ С ПОДДЕРЖКОЙ ТЕМПЕРАТУР
  */
 export const parseTafUniversal = (tafString: string): ParsedTaf => {
   console.log('🔄 Универсальный парсинг TAF:', tafString);
@@ -284,6 +470,9 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
   // ИСПРАВЛЕНИЕ: Нормализуем строку перед парсингом
   const normalizedTaf = normalizeTafString(tafString);
   const parts = normalizedTaf.split(' ');
+
+    // ОТЛАДКА: Поиск температур
+  debugTemperatures(parts);
   
   const parsed: ParsedTaf = {
     icaoCode: '',
@@ -298,6 +487,7 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
   let currentForecast: TafForecast | null = null;
   let inRemarks = false;
   const remarks: string[] = [];
+  const globalTemperatures: TemperatureInfo[] = []; // НОВОЕ: Глобальные температуры
 
   // Парсинг заголовка TAF - УЛУЧШЕННАЯ ВЕРСИЯ
   while (index < parts.length) {
@@ -333,6 +523,17 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
       continue;
     }
     
+    // НОВОЕ: Парсинг температур в заголовке
+    if (isTemperatureCode(part)) {
+      const temp = parseTemperature(part);
+      if (temp) {
+        globalTemperatures.push(temp);
+        console.log('🌡️ Добавлена глобальная температура:', temp);
+      }
+      index++;
+      continue;
+    }
+    
     // COR/AMD/RTD
     if (part === 'COR' || part === 'AMD' || part === 'RTD') {
       console.log('ℹ️ Модификатор:', part);
@@ -355,6 +556,53 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
     index++;
   }
 
+  console.log('🔍 Активный поиск температур во всех частях TAF...');
+  const temperatureParts = parts.filter(part => isTemperatureCode(part));
+  console.log('🌡️ Найдены температурные коды:', temperatureParts);
+
+  temperatureParts.forEach((tempPart, index) => {
+    console.log(`🌡️ Парсинг температуры [${index}]:`, tempPart);
+    const temp = parseTemperature(tempPart);
+    if (temp) {
+      // Проверяем, нет ли уже такой температуры
+      const isDuplicate = globalTemperatures.some(
+        t => t.type === temp.type && t.time === temp.time && t.value === temp.value
+      );
+      
+      if (!isDuplicate) {
+        globalTemperatures.push(temp);
+        console.log(`✅ Добавлена глобальная температура:`, temp);
+      } else {
+        console.log(`⚠️ Пропущена дублирующаяся температура:`, temp);
+      }
+      
+      // Также добавляем в текущий прогноз если он существует
+      if (currentForecast) {
+        if (!currentForecast.temperature) {
+          currentForecast.temperature = [];
+        }
+        const forecastDuplicate = currentForecast.temperature.some(
+          t => t.type === temp.type && t.time === temp.time && t.value === temp.value
+        );
+        
+        if (!forecastDuplicate) {
+          currentForecast.temperature.push(temp);
+          console.log(`✅ Добавлена температура в прогноз:`, temp);
+        }
+      }
+    } else {
+      console.log(`❌ Не удалось распарсить температуру:`, tempPart);
+    }
+  });
+
+  console.log(`📊 Итоговое количество температур: ${globalTemperatures.length}`);
+
+  const allTemperatures = findAndParseTemperatures(parts);
+  if (allTemperatures.length > 0) {
+    globalTemperatures.push(...allTemperatures);
+    console.log('🌡️ Всего найдено температур:', allTemperatures.length);
+  }
+
   // Если не нашли время выпуска, используем текущее
   if (!parsed.issuanceTime) {
     const now = new Date();
@@ -372,6 +620,11 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
       to: (parseInt(parsed.issuanceTime.slice(0, 2)) + 1).toString().padStart(2, '0') + parsed.issuanceTime.slice(2, 6)
     };
     console.log('📅 Установлен период по умолчанию:', parsed.validity);
+  }
+
+  // НОВОЕ: Добавляем глобальные температуры в основной объект
+  if (globalTemperatures.length > 0) {
+    parsed.temperature = globalTemperatures;
   }
 
   console.log('📊 Начинаем парсинг прогнозов с индекса:', index);
@@ -502,6 +755,20 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
       continue;
     }
 
+    // НОВОЕ: Парсинг температур в прогнозах
+    if (isTemperatureCode(part)) {
+      const temp = parseTemperature(part);
+      if (temp && currentForecast) {
+        if (!currentForecast.temperature) {
+          currentForecast.temperature = [];
+        }
+        currentForecast.temperature.push(temp);
+        console.log('🌡️ Добавлена температура в прогноз:', temp);
+      }
+      index++;
+      continue;
+    }
+
     // Парсим метеоданные для текущего прогноза
     if (currentForecast) {
       parseMeteoData(currentForecast, part);
@@ -531,6 +798,7 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
     issuanceTime: parsed.issuanceTime,
     validity: parsed.validity,
     forecastCount: parsed.forecast.length,
+    temperatures: parsed.temperature,
     forecasts: parsed.forecast.map(f => ({
       type: f.type,
       changeType: f.changeType,
@@ -539,6 +807,7 @@ export const parseTafUniversal = (tafString: string): ParsedTaf => {
       hasVisibility: !!f.visibility,
       weatherCount: f.weather.length,
       cloudsCount: f.clouds.length,
+      tempCount: f.temperature?.length || 0,
       raw: f.raw
     }))
   });
@@ -575,6 +844,43 @@ const parseComplexMeteoData = (forecast: TafForecast, part: string): boolean => 
   return false;
 };
 
+const parseVerticalVisibility = (code: string): TafCloud | null => {
+  console.log('👁️ Парсинг вертикальной видимости:', code);
+  
+  if (!code.startsWith('VV')) {
+    return null;
+  }
+  
+  const vvDigits = code.slice(2);
+  let altitude = 0;
+  
+  // Обработка различных форматов VV
+  if (/^\d{3}$/.test(vvDigits)) {
+    // Стандартный формат: VV002 = 200 ft (002 * 100)
+    altitude = parseInt(vvDigits) * 100;
+  } else if (/^\d{2}$/.test(vvDigits)) {
+    // Сокращенный формат: VV02 = 200 ft (02 * 100)
+    altitude = parseInt(vvDigits) * 100;
+  } else if (/^\d{1}$/.test(vvDigits)) {
+    // Очень короткий формат: VV2 = 200 ft (2 * 100)
+    altitude = parseInt(vvDigits) * 100;
+  } else {
+    // Пытаемся извлечь число из любой части строки
+    const numbers = code.match(/\d+/g);
+    altitude = numbers ? parseInt(numbers[0]) * 100 : 0;
+  }
+  
+  console.log(`👁️ Вертикальная видимость: ${code} -> ${altitude} ft`);
+  
+  return {
+    coverage: 'vertical_visibility',
+    altitude: altitude,
+    isVerticalVisibility: true,
+    isCeiling: true, // VV всегда считается потолком
+    type: undefined
+  };
+};
+
 /**
  * Парсинг метеоданных для прогноза
  */
@@ -583,6 +889,23 @@ const parseMeteoData = (forecast: TafForecast, part: string): void => {
 
   // Сначала пробуем сложные форматы
   if (parseComplexMeteoData(forecast, part)) {
+    parsedElement = true;
+  }
+
+  // Затем вертикальную видимость (должно быть до облачности!)
+  else if (isVerticalVisibilityCode(part)) {
+    // VV обрабатываем как особый тип видимости, а не облачность
+    const vvData = parseVerticalVisibility(part);
+    if (vvData) {
+      // Добавляем в облачность для обратной совместимости, но с правильным флагом
+      forecast.clouds = forecast.clouds || [];
+      forecast.clouds.push(vvData);
+      
+      // Также устанавливаем специальное поле для вертикальной видимости
+      forecast.verticalVisibility = vvData;
+      
+      console.log('👁️ Парсинг вертикальной видимости:', vvData);
+    }
     parsedElement = true;
   }
 
@@ -919,32 +1242,36 @@ const decodeCloudCoverage = (code: string): TafCloud => {
     'SCT': 'scattered', 
     'BKN': 'broken',
     'OVC': 'overcast',
-    'VV': 'vertical_visibility',
     'SKC': 'sky_clear',
     'CLR': 'clear',
     'NSC': 'no_significant_clouds',
     'NCD': 'no_clouds_detected'
   };
 
-  // ИСПРАВЛЕНИЕ: Поддержка формата 5CT822 (из вашего примера)
-  if (/^\d{1,2}[A-Z]{2}\d+$/.test(code)) {
-    const altitude = parseInt(code.slice(5)) * 100; // 22 * 100 = 2200 ft
-    
-    const cloud: TafCloud = {
-      coverage: 'unknown',
-      altitude: altitude,
-      type: undefined,
-      isCeiling: false
+  // ИСПРАВЛЕНИЕ: VV больше не обрабатывается здесь
+  if (code.startsWith('VV')) {
+    console.warn('⚠️ VV попал в decodeCloudCoverage, но должен обрабатываться отдельно:', code);
+    // Возвращаем fallback
+    return {
+      coverage: 'vertical_visibility',
+      altitude: 0,
+      isVerticalVisibility: true,
+      isCeiling: true
     };
-    
-    return cloud;
   }
 
-  // Стандартный парсинг
+  // Стандартный парсинг для обычных облаков
   const coverage = code.slice(0, 3);
+  
+  let altitude = 0;
+  const altitudeMatch = code.match(/\d+/);
+  if (altitudeMatch) {
+    altitude = parseInt(altitudeMatch[0]) * 100;
+  }
+
   const cloud: TafCloud = {
     coverage: coverageMap[coverage] || coverage,
-    altitude: parseInt(code.slice(3, 6)) * 100,
+    altitude: altitude,
     type: undefined,
     isCeiling: false
   };
@@ -961,6 +1288,8 @@ const decodeCloudCoverage = (code: string): TafCloud => {
     cloud.isCeiling = cloud.coverage === 'broken' || cloud.coverage === 'overcast';
   }
 
+  console.log(`☁️ Парсинг облачности: ${code} -> ${cloud.coverage} на ${cloud.altitude} ft`);
+  
   return cloud;
 };
 
@@ -1150,6 +1479,11 @@ export const getCloudDescriptionWithHazards = (cloud: TafCloud): string => {
     'vertical_visibility': 'Вертикальная видимость'
   };
 
+  // ИСПРАВЛЕНИЕ: Для вертикальной видимости показываем правильное описание
+  if (cloud.isVerticalVisibility) {
+    return `Вертикальная видимость ${cloud.altitude} ft (небо не видно)`;
+  }
+
   let description = `${coverageMap[cloud.coverage] || cloud.coverage} на ${cloud.altitude} ft`;
   
   if (cloud.type === 'CB') {
@@ -1269,8 +1603,6 @@ export const formatTafTimeForDisplay = (timeString: string): string => {
     return timeString;
   }
 };
-
-
 
 /**
  * Безопасный парсинг TAF с обработкой ошибок

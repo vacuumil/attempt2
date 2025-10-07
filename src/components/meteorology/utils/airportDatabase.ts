@@ -10,6 +10,7 @@ export const LOCAL_AIRPORT_DATABASE = [
   { icao: 'UUDD', name: 'Домодедово, Москва', country: 'Россия' },
   { icao: 'UUWW', name: 'Внуково, Москва', country: 'Россия' },
   { icao: 'URSS', name: 'Сочи', country: 'Россия' },
+  { icao: 'UNAA', name: 'Абакан', country: 'Россия' },
   { icao: 'URMM', name: 'Минеральные Воды', country: 'Россия' },
   { icao: 'URKK', name: 'Краснодар', country: 'Россия' },
   { icao: 'USSS', name: 'Екатеринбург', country: 'Россия' },

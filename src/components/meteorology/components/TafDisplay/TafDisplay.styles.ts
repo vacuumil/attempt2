@@ -165,6 +165,15 @@ export const WeatherGroup = styled.div`
       line-height: 1.4;
     }
   }
+
+    .vertical-visibility-item {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    font-weight: bold;
+  }
 `;
 
 export const ChangeIndicator = styled.span<ChangeIndicatorProps>`
@@ -351,3 +360,4 @@ export const TafHeader = styled.div`
     margin: 0 auto;
   }
 `;
+

@@ -1,7 +1,6 @@
 import React from 'react';
 import { FrequencySelector } from './FrequencySelector';
 import { OBSKnob } from './OBSKnob';
-import { TOFROMIndicator } from './TOFROMIndicator';
 import type { VORStation } from '../../../../hooks/useVOR';
 import './VORReceiver.css';
 
@@ -22,7 +21,6 @@ export const VORReceiver: React.FC<VORReceiverProps> = ({
   onObsCourseChange,
   isSignalValid,
   currentStation,
-  toFromIndicator
 }) => {
   return (
     <div className="vor-receiver">
@@ -66,10 +64,7 @@ export const VORReceiver: React.FC<VORReceiverProps> = ({
                 </div>
               </div>
               
-              <div className="tofrom-display">
-                <span className="tofrom-label">TO/FROM</span>
-                <TOFROMIndicator indicator={toFromIndicator} />
-              </div>
+              
             </div>
 
             {/* Правая часть: ручка OBS */}

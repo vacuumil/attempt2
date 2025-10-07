@@ -1,6 +1,6 @@
 // src/components/meteorology/components/TafDisplay/TafDisplay.tsx
 import React from 'react';
-import type { ParsedTaf, TafForecast, TafWeather, TafCloud, TemperatureInfo } from '../../utils/tafParser';
+import type { ParsedTaf, TafForecast, TafWeather, TafCloud } from '../../utils/tafParser';
 import { 
   getWindDescription, 
   getVisibilityDescription, 
@@ -101,107 +101,127 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
   };
 
   // Функция для рендеринга элементов прогноза с проверкой на наличие данных
-  const renderForecastElements = (period: TafForecast, changeType?: string) => {
-    const elements: React.ReactElement[] = [];
-    const isChangePeriod = !!changeType;
-    const isFmPeriod = changeType === 'FM'; // ИСПРАВЛЕНИЕ: отдельно обрабатываем FM
+const renderForecastElements = (period: TafForecast, changeType?: string) => {
+  const elements: React.ReactElement[] = [];
+  const isChangePeriod = !!changeType;
+  const isFmPeriod = changeType === 'FM';
 
-    // Ветер - показываем всегда если есть
-    if (period.wind) {
-      elements.push(
-        <WeatherItem key="wind">
-          <div className="weather-label">
-            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
-            Ветер
-          </div>
-          <WeatherValue>
-            {getWindDescription(period.wind)}
-          </WeatherValue>
-        </WeatherItem>
-      );
-    } else if (!isChangePeriod || isFmPeriod) {
-      // ИСПРАВЛЕНИЕ: Для основного прогноза и FM показываем "Не указан"
-      elements.push(
-        <WeatherItem key="wind">
-          <div className="weather-label">
-            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
-            Ветер
-          </div>
-          <WeatherValue>
-            Не указан
-          </WeatherValue>
-        </WeatherItem>
-      );
-    }
-
-    // Видимость - аналогичная логика
-    if (period.visibility) {
-      elements.push(
-        <WeatherItem key="visibility">
-          <div className="weather-label">
-            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
-            Видимость
-          </div>
-          <WeatherValue>
-            {getVisibilityDescription(period.visibility)}
-          </WeatherValue>
-        </WeatherItem>
-      );
-    } else if (!isChangePeriod || isFmPeriod) {
-      // ИСПРАВЛЕНИЕ: Для основного прогноза и FM показываем "Не указана"
-      elements.push(
-        <WeatherItem key="visibility">
-          <div className="weather-label">
-            <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
-            Видимость
-          </div>
-          <WeatherValue>
-            Не указана
-          </WeatherValue>
-        </WeatherItem>
-      );
-    }
-
-    // Погодные явления - показываем всегда
+  // Ветер - показываем всегда если есть
+  if (period.wind) {
     elements.push(
-      <WeatherItem key="weather">
+      <WeatherItem key="wind">
         <div className="weather-label">
-          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🌦️</span>
-          Погодные явления
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
+          Ветер
         </div>
         <WeatherValue>
-          {period.weather && period.weather.length > 0 ? (
-            <WeatherGroup>
-              {period.weather.map((weather: TafWeather, idx: number) => (
-                <div key={idx} className="weather-badge">
-                  <span style={{ marginRight: '5px' }}>
-                    {getWeatherIcon(weather.phenomena[0])}
-                  </span>
-                  {getWeatherDescription(weather)}
-                  <code className="weather-code">{weather.raw}</code>
-                </div>
-              ))}
-            </WeatherGroup>
-          ) : (
-            <span style={{ color: '#64ffda' }}>
-              {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительных явлений'}
-            </span>
-          )}
+          {getWindDescription(period.wind)}
         </WeatherValue>
       </WeatherItem>
     );
-
-    // Облачность - показываем всегда
+  } else if (!isChangePeriod || isFmPeriod) {
     elements.push(
-      <WeatherItem key="clouds">
+      <WeatherItem key="wind">
         <div className="weather-label">
-          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>☁️</span>
-          Облачность
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>💨</span>
+          Ветер
         </div>
         <WeatherValue>
-          {period.clouds && period.clouds.length > 0 ? (
-            <WeatherGroup>
-              {period.clouds.map((cloud: TafCloud, idx: number) => (
+          Не указан
+        </WeatherValue>
+      </WeatherItem>
+    );
+  }
+
+  // Видимость - аналогичная логика
+  if (period.visibility) {
+    elements.push(
+      <WeatherItem key="visibility">
+        <div className="weather-label">
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
+          Видимость
+        </div>
+        <WeatherValue>
+          {getVisibilityDescription(period.visibility)}
+        </WeatherValue>
+      </WeatherItem>
+    );
+  } else if (!isChangePeriod || isFmPeriod) {
+    elements.push(
+      <WeatherItem key="visibility">
+        <div className="weather-label">
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>👁️</span>
+          Видимость
+        </div>
+        <WeatherValue>
+          Не указана
+        </WeatherValue>
+      </WeatherItem>
+    );
+  }
+
+  // НОВОЕ: Вертикальная видимость (показываем отдельно от облачности)
+  if (period.verticalVisibility) {
+    elements.push(
+      <WeatherItem key="vertical-visibility">
+        <div className="weather-label">
+          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>⬇️</span>
+          Вертикальная видимость
+        </div>
+        <WeatherValue>
+          <div className="vertical-visibility-item">
+            <strong>{period.verticalVisibility.altitude} ft</strong>
+            <div style={{ fontSize: '0.8rem', color: '#8892b0', marginTop: '2px' }}>
+              (Небо не видно)
+            </div>
+          </div>
+        </WeatherValue>
+      </WeatherItem>
+    );
+  }
+
+  // Погодные явления - показываем всегда
+  elements.push(
+    <WeatherItem key="weather">
+      <div className="weather-label">
+        <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🌦️</span>
+        Погодные явления
+      </div>
+      <WeatherValue>
+        {period.weather && period.weather.length > 0 ? (
+          <WeatherGroup>
+            {period.weather.map((weather: TafWeather, idx: number) => (
+              <div key={idx} className="weather-badge">
+                <span style={{ marginRight: '5px' }}>
+                  {getWeatherIcon(weather.phenomena[0])}
+                </span>
+                {getWeatherDescription(weather)}
+                <code className="weather-code">{weather.raw}</code>
+              </div>
+            ))}
+          </WeatherGroup>
+        ) : (
+          <span style={{ color: '#64ffda' }}>
+            {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительных явлений'}
+          </span>
+        )}
+      </WeatherValue>
+    </WeatherItem>
+  );
+
+  // Облачность - показываем всегда, но исключаем VV из списка облаков
+  elements.push(
+    <WeatherItem key="clouds">
+      <div className="weather-label">
+        <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>☁️</span>
+        Облачность
+      </div>
+      <WeatherValue>
+        {period.clouds && period.clouds.filter(cloud => !cloud.isVerticalVisibility).length > 0 ? (
+          <WeatherGroup>
+            {period.clouds
+              .filter(cloud => !cloud.isVerticalVisibility) // Исключаем VV из облаков
+              .map((cloud: TafCloud, idx: number) => (
                 <div key={idx} className={`cloud-item ${cloud.isCeiling ? 'ceiling' : ''} ${cloud.type === 'CB' ? 'cb' : ''}`}>
                   <div className="cloud-header">
                     <strong>{cloud.coverage.toUpperCase()}{cloud.type ? `/${cloud.type}` : ''}</strong>
@@ -212,15 +232,15 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
                   </div>
                 </div>
               ))}
-            </WeatherGroup>
-          ) : (
-            <span style={{ color: '#64ffda' }}>
-              {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительной облачности'}
-            </span>
-          )}
-        </WeatherValue>
-      </WeatherItem>
-    );
+          </WeatherGroup>
+        ) : (
+          <span style={{ color: '#64ffda' }}>
+            {isChangePeriod && !isFmPeriod ? 'Без изменений' : 'Нет значительной облачности'}
+          </span>
+        )}
+      </WeatherValue>
+    </WeatherItem>
+  );
 
     // ИСПРАВЛЕНИЕ: Для FM показываем все элементы, как для основного прогноза
     if (isFmPeriod) {
@@ -336,11 +356,17 @@ export const TafDisplay: React.FC<TafDisplayProps> = ({ tafData, icaoCode }) => 
       );
     }
 
-    // Показываем температуру в основном блоке
+    // ИСПРАВЛЕНИЕ: Сортируем температуры - сначала максимальная, потом минимальная
+    const sortedTemperatures = [...period.temperature].sort((a, b) => {
+      if (a.type === 'max' && b.type === 'min') return -1;
+      if (a.type === 'min' && b.type === 'max') return 1;
+      return 0;
+    });
+
     return (
       <WeatherGrid>
-        {period.temperature.map((temp: TemperatureInfo, idx: number) => (
-          <WeatherItem key={idx}>
+        {sortedTemperatures.map((temp, idx) => (
+          <WeatherItem key={`${temp.type}-${idx}`}>
             <div className="weather-label">
               <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>
                 {temp.type === 'max' ? '📈' : '📉'}
