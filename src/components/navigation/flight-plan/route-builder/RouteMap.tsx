@@ -6,9 +6,7 @@ import {
   MapControls, 
   ControlButton,
   WaypointTooltip,
-  ScaleIndicator,
-  RouteInfoPanel,
-  InfoItem
+  ScaleIndicator
 } from './RouteMap.styles';
 import { waypoints, type Waypoint } from './data/waypoints';
 import { convertToCartesian, isPointInCircle, calculateRouteLegs } from './utils/calculations';
@@ -329,10 +327,6 @@ export const RouteMap: React.FC<RouteMapProps> = ({
   useEffect(() => {
     drawMap();
   }, [drawMap]);
-
-  const totalDistance = routeLegs.reduce((sum, leg) => sum + leg.distance, 0);
-  const totalTime = routeLegs.reduce((sum, leg) => sum + leg.time, 0);
-
   return (
     <MapContainer ref={containerRef}>
       <Canvas
@@ -372,27 +366,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         </ControlButton>
       </MapControls>
 
-      <RouteInfoPanel>
-        <h4>📊 Параметры маршрута</h4>
-        <InfoItem>
-          <span className="label">Участков:</span>
-          <span className="value">{selectedWaypoints.length - 1}</span>
-        </InfoItem>
-        <InfoItem>
-          <span className="label">Расстояние:</span>
-          <span className="value">{formatDistance(totalDistance)}</span>
-        </InfoItem>
-        <InfoItem>
-          <span className="label">Время (250 км/ч):</span>
-          <span className="value">{Math.round(totalTime)} мин</span>
-        </InfoItem>
-        {routeLegs.length > 0 && (
-          <InfoItem>
-            <span className="label">Средний ЗМПУ:</span>
-            <span className="value">{Math.round(routeLegs.reduce((sum, leg) => sum + leg.course, 0) / routeLegs.length)}°</span>
-          </InfoItem>
-        )}
-      </RouteInfoPanel>
+
 
       <ScaleIndicator>
         Масштаб: 1:{Math.round(100 / scale)}
