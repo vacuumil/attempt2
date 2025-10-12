@@ -20,6 +20,10 @@ export const TabList = styled.div`
   border-radius: 12px 12px 0 0;
   padding: 5px;
   flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 export const Tab = styled.button<TabProps>`
@@ -59,6 +63,13 @@ export const Tab = styled.button<TabProps>`
   &:disabled {
     cursor: not-allowed;
     opacity: 0.3;
+  }
+
+  @media (max-width: 768px) {
+    min-width: auto;
+    padding: 12px 15px;
+    font-size: 1rem;
+    margin: 2px 0;
   }
 `;
 

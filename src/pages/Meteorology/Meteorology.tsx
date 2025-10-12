@@ -12,6 +12,8 @@ import { TafDisplay } from '../../components/meteorology/components/TafDisplay';
 import type { ParsedTaf } from '../../components/meteorology/utils/tafParser';
 import { SigmetDisplay } from '../../components/meteorology/components/SigmetDisplay';
 import type { SigmetData } from '../../components/meteorology/utils/sigmetParser';
+import { PirepDisplay } from '../../components/meteorology/components/PirepDisplay/PirepDisplay';
+import { SigwxMain } from '../../components/meteorology/components/SIGWX/SigwxMain'; // ДОБАВЛЕНО
 
 // Хуки и утилиты
 import { useMetarData } from '../../components/meteorology/hooks/useMetarData';
@@ -39,14 +41,12 @@ const Meteorology: React.FC = () => {
   const [loadingSigmet, setLoadingSigmet] = useState(false);
   const [tafError, setTafError] = useState<string | null>(null);
   const [lastTafFetchTime, setLastTafFetchTime] = useState<number>(0);
-  const [lastIcaoCode, setLastIcaoCode] = useState<string>(''); // ИСПРАВЛЕНИЕ: отслеживаем предыдущий код
+  const [lastIcaoCode, setLastIcaoCode] = useState<string>('');
 
   // Кэширование TAF данных на 10 минут
   const TAF_CACHE_DURATION = 10 * 60 * 1000;
 
-  // Используем useCallback для стабильной ссылки на функцию
   const loadTafData = useCallback(async (code: string) => {
-    // ИСПРАВЛЕНИЕ: Проверяем, действительно ли нужно обновлять данные
     const now = Date.now();
     if (code === lastIcaoCode && tafData && (now - lastTafFetchTime) < TAF_CACHE_DURATION) {
       console.log('🔄 Использую кэшированные данные TAF для', code);
@@ -63,7 +63,6 @@ const Meteorology: React.FC = () => {
       
       console.log('📨 Получен TAF:', rawTaf.substring(0, 100) + '...');
       
-      // Проверяем, не mock ли это
       if (rawTaf.includes('🎭 Генерация mock') || rawTaf.includes('🎯 Использую реалистичный')) {
         console.warn('⚠️ Используются mock данные TAF');
         setTafError('Реальные данные TAF временно недоступны. Показаны демо-данные.');
@@ -83,7 +82,6 @@ const Meteorology: React.FC = () => {
         
         console.log('✅ Успешный парсинг TAF:', parsedTaf);
         
-        // Валидация распарсенных данных
         if (!parsedTaf.issuanceTime || !parsedTaf.validity.from || !parsedTaf.validity.to) {
           console.warn('⚠️ Неполные данные TAF, пробуем безопасный парсер');
           parsedTaf = parseTafSafely(rawTaf);
@@ -96,7 +94,7 @@ const Meteorology: React.FC = () => {
       if (parsedTaf && parsedTaf.forecast && parsedTaf.forecast.length > 0) {
         setTafData(parsedTaf);
         setLastTafFetchTime(now);
-        setLastIcaoCode(code); // ИСПРАВЛЕНИЕ: сохраняем код аэропорта
+        setLastIcaoCode(code);
         console.log('📊 TAF данные установлены для', code);
       } else {
         setTafError('Не удалось распарсить данные TAF');
@@ -126,14 +124,12 @@ const Meteorology: React.FC = () => {
     }
   }, []);
 
-  // Загрузка TAF данных при изменении аэропорта - ИСПРАВЛЕННАЯ ЛОГИКА
   useEffect(() => {
     if (icaoCode && icaoCode.length === 4 && icaoCode !== lastIcaoCode) {
       console.log('🔄 Смена аэропорта, загружаем TAF для:', icaoCode);
       loadTafData(icaoCode);
       loadSigmetData(icaoCode);
     } else if (!icaoCode || icaoCode.length !== 4) {
-      // Сбрасываем данные если код аэропорта невалидный
       console.log('🔄 Сброс данных TAF - невалидный код аэропорта');
       setTafData(null);
       setSigmetData([]);
@@ -142,13 +138,11 @@ const Meteorology: React.FC = () => {
     }
   }, [icaoCode, loadTafData, loadSigmetData, lastIcaoCode]);
 
-  // ИСПРАВЛЕНИЕ: Обработчик поиска теперь корректно обновляет все данные
   const handleSearch = (code: string) => {
     console.log('🔍 Поиск данных для аэропорта:', code);
     fetchData(code);
-    setActiveTab('metar'); // Переключаем на METAR после нового поиска
+    setActiveTab('metar');
     
-    // Принудительно сбрасываем предыдущий код аэропорта
     if (code !== lastIcaoCode) {
       setLastIcaoCode('');
     }
@@ -251,15 +245,14 @@ const Meteorology: React.FC = () => {
 
       case 'airep':
         return (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#8892b0' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🚧</div>
-            <h3 style={{ color: '#ffd700', marginBottom: '15px' }}>Раздел в разработке</h3>
-            <p>Функциональность PIREP (отчеты пилотов) будет доступна в ближайшем обновлении</p>
-          </div>
+          <PirepDisplay icaoCode={icaoCode} />
         );
 
-      default:
-        return null;
+      // ДОБАВЛЕН СЛУЧАЙ ДЛЯ SIGWX
+      case 'sigwx':
+        return (
+          <SigwxMain />
+        );
     }
   };
 
@@ -282,7 +275,7 @@ const Meteorology: React.FC = () => {
           <PageTitle>Авиационная Метеорология</PageTitle>
           <PageDescription>
             Профессиональный анализ текущих и прогнозных метеоусловий. 
-            METAR, TAF, SIGMET/AIRMET в одном интерфейсе для принятия взвешенных решений.
+            METAR, TAF, SIGMET/AIRMET, SIGWX в одном интерфейсе для принятия взвешенных решений.
           </PageDescription>
         </PageHeader>
 
@@ -321,8 +314,8 @@ const Meteorology: React.FC = () => {
           </div>
         )}
 
-        {/* Показываем табы только если есть данные METAR */}
-        {icaoCode && metarData && (
+        {/* Показываем табы только если есть данные METAR или выбран SIGWX */}
+        {(icaoCode && metarData) || activeTab === 'sigwx' ? (
           <WeatherTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -331,7 +324,7 @@ const Meteorology: React.FC = () => {
             hasSigmet={sigmetData.length > 0}
             hasAirep={false}
           />
-        )}
+        ) : null}
 
         {/* Индикаторы загрузки с прогрессом */}
         {(loading || loadingTaf || loadingSigmet) && (
@@ -411,9 +404,15 @@ const Meteorology: React.FC = () => {
               </div>
 
               <div style={{ padding: '20px', background: 'rgba(157, 78, 221, 0.1)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🗺️</div>
+                <h4 style={{ color: '#e6f1ff', marginBottom: '10px' }}>SIGWX</h4>
+                <p>Карты значительных погодных явлений</p>
+              </div>
+
+              <div style={{ padding: '20px', background: 'rgba(255, 193, 7, 0.1)', borderRadius: '8px' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '10px' }}>✈️</div>
                 <h4 style={{ color: '#e6f1ff', marginBottom: '10px' }}>PIREP</h4>
-                <p>Отчеты пилотов о фактических условиях (скоро)</p>
+                <p>Отчеты пилотов о фактических условиях</p>
               </div>
             </div>
 

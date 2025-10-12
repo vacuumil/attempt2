@@ -1,7 +1,7 @@
-// src/components/meteorology/components/SigmetDisplay/SigmetDisplay.styles.ts
+// src/components/meteorology/components/PirepDisplay/PirepDisplay.styles.ts
 import styled from 'styled-components';
 
-export const SigmetContainer = styled.div`
+export const EducationalSection = styled.div`
   background: rgba(26, 111, 196, 0.05);
   border: 1px solid #1a6fc4;
   border-radius: 12px;
@@ -22,34 +22,17 @@ export const SigmetContainer = styled.div`
   }
 `;
 
-export const EducationalSection = styled.div`
-  background: rgba(10, 25, 47, 0.3);
-  border-radius: 12px;
-  padding: 0;
-  
-  @media (max-width: 768px) {
-    border-radius: 8px;
-  }
-`;
-
 export const EducationalContent = styled.div`
-  padding: 30px;
   color: #e6f1ff;
   line-height: 1.6;
   
   /* Планшеты */
   @media (max-width: 1024px) {
-    padding: 25px;
+    line-height: 1.5;
   }
   
   /* Мобильные устройства */
   @media (max-width: 768px) {
-    padding: 20px;
-    line-height: 1.5;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 15px;
     line-height: 1.4;
   }
 `;
@@ -60,12 +43,6 @@ export const ExampleCard = styled.div`
   border-radius: 8px;
   padding: 25px;
   margin-bottom: 25px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #64ffda;
-    transform: translateY(-2px);
-  }
 
   h3 {
     color: #64ffda;
@@ -82,17 +59,6 @@ export const ExampleCard = styled.div`
       margin-bottom: 10px;
     }
   }
-
-  h4 {
-    color: #ffd700;
-    margin: 20px 0 10px 0;
-    font-size: 1.1rem;
-    
-    @media (max-width: 768px) {
-      font-size: 1rem;
-      margin: 15px 0 8px 0;
-    }
-  }
   
   /* Адаптивные отступы */
   @media (max-width: 768px) {
@@ -103,101 +69,6 @@ export const ExampleCard = styled.div`
   @media (max-width: 480px) {
     padding: 15px;
     margin-bottom: 15px;
-    
-    /* Убираем трансформацию на очень маленьких экранах */
-    &:hover {
-      transform: none;
-    }
-  }
-`;
-
-export const HazardMatrix = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin: 15px 0;
-  
-  th, td {
-    padding: 12px 15px;
-    border: 1px solid #1a6fc4;
-    text-align: left;
-  }
-  
-  th {
-    background: rgba(26, 111, 196, 0.2);
-    color: #64ffda;
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  
-  td {
-    color: #e6f1ff;
-    font-size: 0.9rem;
-  }
-  
-  tr:hover {
-    background: rgba(100, 255, 218, 0.05);
-  }
-  
-  /* Планшеты */
-  @media (max-width: 1024px) {
-    th, td {
-      padding: 10px 12px;
-      font-size: 0.9rem;
-    }
-  }
-  
-  /* Мобильные устройства - превращаем в вертикальные карточки */
-  @media (max-width: 768px) {
-    display: block;
-    
-    thead {
-      display: none;
-    }
-    
-    tbody {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    tr {
-      display: flex;
-      flex-direction: column;
-      background: rgba(26, 111, 196, 0.1);
-      border: 1px solid #1a6fc4;
-      border-radius: 6px;
-      padding: 15px;
-    }
-    
-    td {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border: none;
-      border-bottom: 1px solid rgba(26, 111, 196, 0.3);
-      
-      &:last-child {
-        border-bottom: none;
-      }
-      
-      &::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #64ffda;
-        margin-right: 10px;
-      }
-    }
-  }
-  
-  @media (max-width: 480px) {
-    tr {
-      padding: 12px;
-    }
-    
-    td {
-      padding: 6px 0;
-      font-size: 0.85rem;
-    }
   }
 `;
 
@@ -242,16 +113,27 @@ export const InteractiveExample = styled.div`
   padding: 25px;
   margin: 25px 0;
   
-  h4 {
+  h3 {
     color: #64ffda;
     margin-bottom: 20px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+  }
+  
+  h4 {
+    color: #ffd700;
+    margin: 15px 0 10px 0;
+    font-size: 1.1rem;
   }
   
   /* Планшеты */
   @media (max-width: 1024px) {
     padding: 20px;
     margin: 20px 0;
+    
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 18px;
+    }
   }
   
   /* Мобильные устройства */
@@ -259,9 +141,14 @@ export const InteractiveExample = styled.div`
     padding: 15px;
     margin: 15px 0;
     
-    h4 {
+    h3 {
       font-size: 1.1rem;
       margin-bottom: 15px;
+    }
+    
+    h4 {
+      font-size: 1rem;
+      margin: 12px 0 8px 0;
     }
   }
   
@@ -269,40 +156,79 @@ export const InteractiveExample = styled.div`
     padding: 12px;
     margin: 12px 0;
     
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+    
+    h4 {
+      font-size: 0.95rem;
+      margin: 10px 0 6px 0;
+    }
+  }
+`;
+
+export const PirepForm = styled.div`
+  background: rgba(10, 25, 47, 0.5);
+  border: 1px solid #1a6fc4;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  
+  h4 {
+    color: #64ffda;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+  }
+  
+  /* Мобильные устройства */
+  @media (max-width: 768px) {
+    padding: 15px;
+    margin: 12px 0;
+    
     h4 {
       font-size: 1rem;
       margin-bottom: 12px;
     }
   }
+  
+  @media (max-width: 480px) {
+    padding: 12px;
+    margin: 10px 0;
+    
+    h4 {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+  }
 `;
 
-// Новые адаптивные компоненты для кнопок и сеток
-export const ResponsiveButtonGroup = styled.div`
+// Адаптивные компоненты для PIREP
+export const NavigationContainer = styled.div`
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 30px;
   flex-wrap: wrap;
+  justify-content: center;
   
   /* Планшеты */
   @media (max-width: 1024px) {
-    gap: 12px;
-    margin-bottom: 18px;
+    margin-bottom: 25px;
   }
   
   /* Мобильные устройства */
   @media (max-width: 768px) {
+    margin-bottom: 20px;
     gap: 8px;
-    margin-bottom: 15px;
-    flex-direction: column;
   }
   
   @media (max-width: 480px) {
+    margin-bottom: 15px;
     gap: 6px;
-    margin-bottom: 12px;
   }
 `;
 
-export const ResponsiveButton = styled.button<{ $isActive?: boolean }>`
+export const NavButton = styled.button<{ $isActive: boolean }>`
   padding: 12px 20px;
   background: ${props => props.$isActive 
     ? 'linear-gradient(135deg, #64ffda 0%, #1a6fc4 100%)' 
@@ -314,8 +240,7 @@ export const ResponsiveButton = styled.button<{ $isActive?: boolean }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1;
-  min-width: 120px;
+  white-space: nowrap;
   
   &:hover {
     background: ${props => props.$isActive 
@@ -328,15 +253,14 @@ export const ResponsiveButton = styled.button<{ $isActive?: boolean }>`
   @media (max-width: 1024px) {
     padding: 10px 16px;
     font-size: 0.95rem;
-    min-width: 110px;
   }
   
   /* Мобильные устройства */
   @media (max-width: 768px) {
-    padding: 12px 16px;
+    padding: 8px 12px;
     font-size: 0.9rem;
-    min-width: auto;
-    flex: none;
+    flex: 1;
+    min-width: 120px;
     
     &:hover {
       transform: none;
@@ -344,49 +268,137 @@ export const ResponsiveButton = styled.button<{ $isActive?: boolean }>`
   }
   
   @media (max-width: 480px) {
-    padding: 10px 12px;
+    padding: 6px 10px;
     font-size: 0.85rem;
+    min-width: 100px;
   }
 `;
 
-export const ResponsiveGrid = styled.div<{ $columns?: number }>`
+export const CodeGrid = styled.div`
   display: grid;
-  grid-template-columns: ${props => `repeat(${props.$columns || 3}, 1fr)`};
-  gap: 20px;
-  margin: 20px 0;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 15px 0;
   
   /* Планшеты */
   @media (max-width: 1024px) {
-    grid-template-columns: ${props => `repeat(${Math.min(props.$columns || 3, 2)}, 1fr)`};
-    gap: 16px;
-    margin: 16px 0;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
   }
   
   /* Мобильные устройства */
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
     margin: 12px 0;
   }
   
   @media (max-width: 480px) {
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 8px;
     margin: 10px 0;
   }
 `;
 
-export const InfoCard = styled.div`
+export const CodeItem = styled.div`
   background: rgba(26, 111, 196, 0.1);
   border: 1px solid #1a6fc4;
   border-radius: 6px;
-  padding: 20px;
-  text-align: center;
+  padding: 15px;
   transition: all 0.3s ease;
   
   &:hover {
     border-color: #64ffda;
     transform: translateY(-2px);
   }
+  
+  div:first-child {
+    color: #64ffda;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  
+  div:nth-child(2) {
+    color: #e6f1ff;
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+  }
+  
+  div:last-child {
+    color: #8892b0;
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  
+  /* Мобильные устройства */
+  @media (max-width: 768px) {
+    padding: 12px;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    div:first-child {
+      font-size: 0.95rem;
+    }
+    
+    div:nth-child(2) {
+      font-size: 0.9rem;
+    }
+    
+    div:last-child {
+      font-size: 0.8rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
+    
+    div:first-child {
+      font-size: 0.9rem;
+    }
+    
+    div:nth-child(2) {
+      font-size: 0.85rem;
+    }
+    
+    div:last-child {
+      font-size: 0.75rem;
+    }
+  }
+`;
+
+export const ProcedureGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+  
+  /* Планшеты */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  
+  /* Мобильные устройства */
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 15px 0;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin: 12px 0;
+  }
+`;
+
+export const ProcedureItem = styled.div`
+  padding: 15px;
+  background: rgba(26, 111, 196, 0.1);
+  border-radius: 6px;
+  border: 1px solid #1a6fc4;
   
   strong {
     color: #64ffda;
@@ -403,11 +415,7 @@ export const InfoCard = styled.div`
   
   /* Мобильные устройства */
   @media (max-width: 768px) {
-    padding: 15px;
-    
-    &:hover {
-      transform: none;
-    }
+    padding: 12px;
     
     strong {
       font-size: 0.95rem;
@@ -420,7 +428,7 @@ export const InfoCard = styled.div`
   }
   
   @media (max-width: 480px) {
-    padding: 12px;
+    padding: 10px;
     
     strong {
       font-size: 0.9rem;
@@ -432,8 +440,8 @@ export const InfoCard = styled.div`
   }
 `;
 
-// Адаптивный заголовок
-export const ResponsiveTitle = styled.h2`
+// Адаптивный заголовок для PIREP
+export const PirepTitle = styled.h2`
   color: #64ffda;
   text-align: center;
   margin-bottom: 30px;
@@ -455,5 +463,89 @@ export const ResponsiveTitle = styled.h2`
   @media (max-width: 480px) {
     font-size: 1.3rem;
     margin-bottom: 15px;
+  }
+`;
+
+// Информационная панель аэропорта
+export const AirportInfoPanel = styled.div`
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(100, 255, 218, 0.1);
+  border-radius: 8px;
+  border: 1px solid #64ffda;
+  
+  h4 {
+    color: #64ffda;
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  
+  p {
+    color: #8892b0;
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Мобильные устройства */
+  @media (max-width: 768px) {
+    padding: 12px;
+    margin-bottom: 15px;
+    
+    h4 {
+      font-size: 1rem;
+    }
+    
+    p {
+      font-size: 0.85rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
+    margin-bottom: 12px;
+    
+    h4 {
+      font-size: 0.95rem;
+    }
+    
+    p {
+      font-size: 0.8rem;
+    }
+  }
+`;
+
+// Адаптивная кнопка генерации
+export const GenerateButton = styled.button`
+  padding: 12px 24px;
+  background: #64ffda;
+  color: #0a192f;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+  
+  &:hover {
+    background: #4fd4b5;
+    transform: translateY(-2px);
+  }
+  
+  /* Мобильные устройства */
+  @media (max-width: 768px) {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-bottom: 12px;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 16px;
+    font-size: 0.85rem;
   }
 `;

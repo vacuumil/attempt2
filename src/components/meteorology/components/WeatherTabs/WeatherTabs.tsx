@@ -1,7 +1,13 @@
-// src/components/meteorology/components/WeatherTabs/WeatherTabs.tsx (УПРОЩЕННАЯ ВЕРСИЯ)
+// src/components/meteorology/components/WeatherTabs/WeatherTabs.tsx
 import React from 'react';
+import {
+  TabsContainer,
+  TabList,
+  Tab,
+  WeatherTypeBadge
+} from './WeatherTabs.styles';
 
-export type WeatherDataType = 'metar' | 'taf' | 'sigmet' | 'airep';
+export type WeatherDataType = 'metar' | 'taf' | 'sigmet' | 'airep' | 'sigwx'; // ДОБАВЛЕНО 'sigwx'
 
 interface WeatherTabsProps {
   activeTab: WeatherDataType;
@@ -15,55 +21,66 @@ interface WeatherTabsProps {
 export const WeatherTabs: React.FC<WeatherTabsProps> = ({
   activeTab,
   onTabChange,
+  hasMetar,
+  hasTaf,
 }) => {
-  console.log('🔥 WeatherTabs RENDERED with activeTab:', activeTab);
-
   const tabs = [
-    { id: 'metar', label: 'METAR', icon: '🌤️' },
-    { id: 'taf', label: 'TAF', icon: '📅' },
-    { id: 'sigmet', label: 'SIGMET', icon: '⚠️' },
-    { id: 'airep', label: 'PIREP', icon: '✈️' }
+    { 
+      id: 'metar' as WeatherDataType, 
+      label: 'METAR', 
+      icon: '🌤️',
+      description: 'Текущая погода',
+      hasData: hasMetar
+    },
+    { 
+      id: 'taf' as WeatherDataType, 
+      label: 'TAF', 
+      icon: '📅',
+      description: 'Прогноз',
+      hasData: hasTaf
+    },
+    { 
+      id: 'sigmet' as WeatherDataType, 
+      label: 'SIGMET', 
+      icon: '⚠️',
+      description: 'Опасные явления',
+      hasData: true // Всегда доступен как учебный материал
+    },
+    { 
+      id: 'sigwx' as WeatherDataType, // ДОБАВЛЕНО
+      label: 'SIGWX', 
+      icon: '🗺️',
+      description: 'Карты погодных явлений',
+      hasData: true // Всегда доступен
+    },
+    { 
+      id: 'airep' as WeatherDataType, 
+      label: 'PIREP', 
+      icon: '✈️',
+      description: 'Отчеты пилотов',
+      hasData: true // Всегда доступен как учебный материал
+    }
   ];
 
   return (
-    <div style={{
-      background: 'rgba(26, 111, 196, 0.1)',
-      border: '2px solid #1a6fc4',
-      borderRadius: '12px',
-      padding: '10px',
-      margin: '20px 0'
-    }}>
-      <h3 style={{ color: '#64ffda', textAlign: 'center' }}> WeatherTabs Component</h3>
-      
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+    <TabsContainer>
+      <TabList>
         {tabs.map(tab => (
-          <button
+          <Tab
             key={tab.id}
-            onClick={() => {
-              console.log('🔄 Tab clicked:', tab.id);
-              onTabChange(tab.id as WeatherDataType);
-            }}
-            style={{
-              padding: '15px 20px',
-              background: activeTab === tab.id ? '#64ffda' : '#1a6fc4',
-              color: activeTab === tab.id ? '#0a192f' : 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              minWidth: '120px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              justifyContent: 'center'
-            }}
+            $isActive={activeTab === tab.id}
+            $hasData={tab.hasData}
+            onClick={() => onTabChange(tab.id)}
+            title={tab.description}
           >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
-          </button>
+            <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span>
+            {tab.label}
+            {tab.hasData && activeTab !== tab.id && (
+              <WeatherTypeBadge>!</WeatherTypeBadge>
+            )}
+          </Tab>
         ))}
-      </div>
-    </div>
+      </TabList>
+    </TabsContainer>
   );
 };
