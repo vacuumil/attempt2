@@ -32,7 +32,7 @@ export const FlightPlanPage: React.FC = () => {
     }
   ]);
 
-  const [trueAirspeed, setTrueAirspeed] = useState(250);
+  const [trueAirspeed, setTrueAirspeed] = useState(200);
   const [windDirection, setWindDirection] = useState(0);
   const [windSpeed, setWindSpeed] = useState(0);
   const [takeoffTime, setTakeoffTime] = useState('08:00');
