@@ -59,7 +59,7 @@ export const RouteCalculator: React.FC<RouteCalculatorProps> = ({
           <div className="value">{formatDistance(totalDistance)}</div>
         </ParameterItem>
         <ParameterItem>
-          <div className="label">Время полета (250 км/ч)</div>
+          <div className="label">Время полета (200 км/ч)</div>
           <div className="value">{calculateTotalFlightTime()}</div>
         </ParameterItem>
         <ParameterItem>

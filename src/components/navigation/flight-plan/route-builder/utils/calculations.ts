@@ -74,7 +74,7 @@ export function calculateRouteLegs(waypoints: Waypoint[]): RouteLegInfo[] {
   if (waypoints.length < 2) return [];
   
   const legs: RouteLegInfo[] = [];
-  const airspeed = 250; // км/ч
+  const airspeed = 200; // км/ч
   
   for (let i = 0; i < waypoints.length - 1; i++) {
     const from = waypoints[i];

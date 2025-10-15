@@ -70,16 +70,24 @@ export const waypoints: Waypoint[] = [
     name: 'Степное Анненково',
     code: 'STEP',
     type: 'fix',
-    coordinates: { bearing: 285, distance: 27 },
+    coordinates: { bearing: 289, distance: 28 },
     region: 'Ульяновская область',
     description: 'Поворотный пункт маршрута А4'
+  },
+  {
+    id: 'z.o.bolwshih',
+    name: 'з.о. Больших Ключищ',
+    code: 'BOL',
+    type: 'fix',
+    coordinates: { bearing: 176, distance: 14 },
+    region: 'Ульяновская область'
   },
   {
     id: 'astradamovka',
     name: 'Астрадамовка',
     code: 'AST',
     type: 'fix',
-    coordinates: { bearing: 280, distance: 76 },
+    coordinates: { bearing: 282, distance: 76 },
     region: 'Ульяновская область'
   },
   {
@@ -87,7 +95,7 @@ export const waypoints: Waypoint[] = [
     name: 'Кивать',
     code: 'KIV',
     type: 'fix',
-    coordinates: { bearing: 270, distance: 79 },
+    coordinates: { bearing: 272, distance: 79 },
     region: 'Ульяновская область'
   },
   {
@@ -95,7 +103,7 @@ export const waypoints: Waypoint[] = [
     name: 'Языково',
     code: 'YAZ',
     type: 'fix',
-    coordinates: { bearing: 259, distance: 54 },
+    coordinates: { bearing: 260, distance: 54 },
     region: 'Ульяновская область'
   },
   {
@@ -103,7 +111,7 @@ export const waypoints: Waypoint[] = [
     name: 'Уржумское',
     code: 'URZ',
     type: 'fix',
-    coordinates: { bearing: 260, distance: 25 },
+    coordinates: { bearing: 264, distance: 26 },
     region: 'Ульяновская область'
   },
   {
@@ -120,7 +128,7 @@ export const waypoints: Waypoint[] = [
     name: 'Крестниково',
     code: 'KRES',
     type: 'fix',
-    coordinates: { bearing: 325, distance: 28 },
+    coordinates: { bearing: 328, distance: 29 },
     region: 'Ульяновская область'
   },
   {
@@ -128,7 +136,7 @@ export const waypoints: Waypoint[] = [
     name: 'Сурское',
     code: 'SUR',
     type: 'fix',
-    coordinates: { bearing: 270, distance: 100 },
+    coordinates: { bearing: 272, distance: 101 },
     region: 'Ульяновская область'
   },
 
@@ -137,7 +145,7 @@ export const waypoints: Waypoint[] = [
     name: 'Стоговка',
     code: 'STOG',
     type: 'fix',
-    coordinates: { bearing: 190, distance: 35 },
+    coordinates: { bearing: 191, distance: 35 },
     region: 'Ульяновская область'
   },
   {
@@ -243,6 +251,62 @@ export const waypoints: Waypoint[] = [
     code: 'FED',
     type: 'fix',
     coordinates: { bearing: 159, distance: 55 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'ohotnicha',
+    name: 'Охотничья',
+    code: 'OHO',
+    type: 'fix',
+    coordinates: { bearing: 226, distance: 12 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'soldatskaya',
+    name: 'н.п. Солдатская Ташла',
+    code: 'SOL',
+    type: 'fix',
+    coordinates: { bearing: 170, distance: 30 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'elshanka',
+    name: 'Елшанка',
+    code: 'ELS',
+    type: 'fix',
+    coordinates: { bearing: 188, distance: 22 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'vyry',
+    name: 'Выры',
+    code: 'VYR',
+    type: 'fix',
+    coordinates: { bearing: 234, distance: 25 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'lomy',
+    name: 'Ломы',
+    code: 'LOM',
+    type: 'fix',
+    coordinates: { bearing: 148, distance: 21 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'volostnikovka',
+    name: 'Волостниковка',
+    code: 'VOL',
+    type: 'fix',
+    coordinates: { bearing: 247, distance: 16 },
+    region: 'Ульяновская область'
+  },
+  {
+    id: 'krotovka_2',
+    name: 'Кротовка',
+    code: 'KROT',
+    type: 'fix',
+    coordinates: { bearing: 285, distance: 6 },
     region: 'Ульяновская область'
   }
 ];
